@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="fake.domain.adamlopresto.golite" >
+
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="18" />
+    <application
+        android:allowBackup="true"
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme" >
+        <activity
+            android:name="fake.domain.adamlopresto.golite.ServingListActivity"
+            android:label="@string/app_name" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="fake.domain.adamlopresto.golite.ServingDetailActivity"
+            android:label="@string/title_serving_detail"
+            android:parentActivityName="fake.domain.adamlopresto.golite.ServingListActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="fake.domain.adamlopresto.golite.ServingListActivity" />
+        </activity>
+
+        <provider
+            android:name="fake.domain.adamlopresto.golite.GoLiteContentProvider"
+            android:authorities="fake.domain.adamlopresto.golite"
+            android:enabled="true"
+            android:exported="false" >
+        </provider>
+    </application>
+
+</manifest>

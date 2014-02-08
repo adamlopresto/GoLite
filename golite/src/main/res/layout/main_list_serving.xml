@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <CheckBox
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/name"
+        tools:text="Item name"
+        android:layout_weight="1"
+        android:focusable="false"
+        />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="3sp"
+        android:layout_marginRight="3sp"
+        tools:text="150"
+        android:id="@+id/number" />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minEms="3"
+        tools:text="grams"
+        android:id="@+id/units" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="right"
+        android:minEms="2"
+        tools:text="1000"
+        android:id="@+id/calories" />
+</LinearLayout>
