@@ -3,14 +3,27 @@ package fake.domain.adamlopresto.golite;
 import android.app.Activity;
 import android.app.ListFragment;
 import android.app.LoaderManager;
+import android.content.ContentValues;
+import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Loader;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.ListView;
-import android.widget.SimpleCursorAdapter;
+import android.widget.ResourceCursorAdapter;
+import android.widget.TextView;
 
+import org.jetbrains.annotations.NotNull;
+
+import java.text.NumberFormat;
+import java.util.Date;
+
+import fake.domain.adamlopresto.golite.db.DatabaseHelper;
+import fake.domain.adamlopresto.golite.db.HistoryTable;
 import fake.domain.adamlopresto.golite.db.ServingsView;
 
 /**
@@ -22,7 +35,7 @@ import fake.domain.adamlopresto.golite.db.ServingsView;
  * Activities containing this fragment MUST implement the {@link Callbacks}
  * interface.
  */
-class ServingListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor>{
+public class ServingListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor>{
 
     /**
      * The serialization (saved instance state) Bundle key representing the
@@ -41,14 +54,31 @@ class ServingListFragment extends ListFragment implements LoaderManager.LoaderCa
      */
     private int mActivatedPosition = ListView.INVALID_POSITION;
 
-    private SimpleCursorAdapter adapter;
+    private ServingsViewAdapter adapter;
+
+    private static final int INDEX_SERVING_ID = 0;
+    private static final int INDEX_NAME = 1;
+    private static final int INDEX_NUMBER = 2;
+    private static final int INDEX_UNIT = 3;
+    private static final int INDEX_CAL = 4;
+    private static final int INDEX_FOOD = 5;
+    private static final int INDEX_QUANTITY = 6;
+    private static final int INDEX_HISTORY_ID = 7;
+
+    private final NumberFormat NUMBER_FORMAT = NumberFormat.getNumberInstance();
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         return new CursorLoader(getActivity(), GoLiteContentProvider.SERVING_LISTED_URI,
-                new String[]{ServingsView.COLUMN_ID, ServingsView.COLUMN_NAME,
-                        ServingsView.COLUMN_NUMBER, ServingsView.COLUMN_UNIT,
-                        ServingsView.COLUMN_CAL, ServingsView.COLUMN_FOOD},
+                new String[]{ServingsView.COLUMN_ID,
+                        ServingsView.COLUMN_NAME,
+                        ServingsView.COLUMN_NUMBER,
+                        ServingsView.COLUMN_UNIT,
+                        ServingsView.COLUMN_CAL,
+                        ServingsView.COLUMN_FOOD,
+                        ServingsView.COLUMN_QUANTITY,
+                        ServingsView.COLUMN_HISTORY_ID
+                },
                 null, null, ServingsView.COLUMN_NAME);
     }
 
@@ -91,11 +121,11 @@ class ServingListFragment extends ListFragment implements LoaderManager.LoaderCa
     public ServingListFragment() {
     }
 
-    @SuppressWarnings("EmptyMethod")
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        //TODO
         super.onCreate(savedInstanceState);
+
+
     }
 
     @Override
@@ -110,7 +140,7 @@ class ServingListFragment extends ListFragment implements LoaderManager.LoaderCa
     }
 
     @Override
-    public void onAttach(Activity activity) {
+    public void onAttach(final Activity activity) {
         super.onAttach(activity);
 
         // Activities containing this fragment must implement its callbacks.
@@ -118,9 +148,7 @@ class ServingListFragment extends ListFragment implements LoaderManager.LoaderCa
             throw new IllegalStateException("Activity must implement fragment's callbacks.");
         }
 
-        setListAdapter(adapter = new SimpleCursorAdapter(getActivity(), R.layout.main_list_serving,
-                null, new String[]{ServingsView.COLUMN_NAME, ServingsView.COLUMN_NUMBER, ServingsView.COLUMN_UNIT,
-                        ServingsView.COLUMN_CAL}, new int[]{R.id.name, R.id.number,R.id.units, R.id.calories}, 0));
+        setListAdapter(adapter = new ServingsViewAdapter());
 
         //noinspection ConstantConditions
         getLoaderManager().initLoader(0, null, this);
@@ -187,4 +215,78 @@ class ServingListFragment extends ListFragment implements LoaderManager.LoaderCa
 
         mActivatedPosition = position;
     }
+
+    private class ServingsViewAdapter extends ResourceCursorAdapter{
+        ServingsViewAdapter(){
+            super(getActivity(), R.layout.main_list_serving,
+                null, 0);
+            /*
+                new String[]{ServingsView.COLUMN_NAME, ServingsView.COLUMN_NUMBER, ServingsView.COLUMN_UNIT,
+                ServingsView.COLUMN_CAL}, new int[]{R.id.name, R.id.number, R.id.units, R.id.calories}, 0);
+            */
+        }
+
+        @Override
+        public void bindView(View view, Context context, Cursor cursor) {
+            final ViewHolder holder = (ViewHolder) view.getTag();
+            holder.name.setText(cursor.getString(INDEX_NAME));
+            double qty = cursor.isNull(INDEX_QUANTITY) ? 1 : cursor.getDouble(INDEX_QUANTITY);
+            holder.name.setChecked(!cursor.isNull(INDEX_HISTORY_ID));
+            holder.number.setText(NUMBER_FORMAT.format(qty * cursor.getDouble(INDEX_NUMBER)));
+            holder.unit.setText(cursor.getString(INDEX_UNIT));
+            holder.cal.setText(NUMBER_FORMAT.format(qty * cursor.getDouble(INDEX_CAL)));
+
+            holder.serving_id = cursor.getLong(INDEX_SERVING_ID);
+
+            if (cursor.isNull(INDEX_HISTORY_ID)){
+                holder.history_id = -1L;
+            } else {
+                holder.history_id = cursor.getLong(INDEX_HISTORY_ID);
+            }
+
+            holder.name.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (holder.name.isChecked()){
+                        ContentValues cv = new ContentValues(3);
+                        cv.put(HistoryTable.COLUMN_SERVING, holder.serving_id);
+                        cv.put(HistoryTable.COLUMN_QUANTITY, 1);
+                        cv.put(HistoryTable.COLUMN_DATE, DatabaseHelper.DATE_FORMAT.format(new Date()));
+                        Uri newUri = v.getContext().getContentResolver().insert(GoLiteContentProvider.HISTORY_URI, cv);
+                        holder.history_id = Long.valueOf(newUri.getLastPathSegment());
+                    } else {
+                        v.getContext().getContentResolver().delete(GoLiteContentProvider.HISTORY_URI,
+                                HistoryTable.COLUMN_ID+"=?", DatabaseHelper.idToArgs(holder.history_id));
+                    }
+
+                }
+            });
+        }
+
+        @NotNull
+        @Override
+        public View newView(Context context, Cursor cursor, ViewGroup parent) {
+            View v = super.newView(context, cursor, parent);
+            ViewHolder holder = new ViewHolder();
+            holder.name   = (CheckBox)v.findViewById(R.id.name);
+            holder.number = (TextView)v.findViewById(R.id.number);
+            holder.unit   = (TextView)v.findViewById(R.id.units);
+            holder.cal    = (TextView)v.findViewById(R.id.calories);
+            v.setTag(holder);
+            return v;
+        }
+
+
+    }
+
+    private static class ViewHolder {
+        CheckBox name;
+        TextView number;
+        TextView unit;
+        TextView cal;
+
+        long history_id = -1L;
+        long serving_id = -1L;
+    }
 }
+

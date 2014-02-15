@@ -5,15 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:ignore="HardcodedText"
-    android:baselineAligned="false">
+    android:baselineAligned="true">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="3sp"
-        android:layout_marginStart="3sp"
-        android:text="("
-        />
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -26,10 +19,11 @@
         android:layout_height="wrap_content"
         tools:text="grams"
         android:id="@+id/units" />
-    <TextView
-        android:layout_width="wrap_content"
+    <Space
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text=" =" />
+        android:layout_weight="1"
+        />
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -41,16 +35,22 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="calories) &#215;" />
+        android:text="cal" />
+    <Space
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        />
     <EditText
         android:layout_width="100sp"
         android:layout_height="wrap_content"
         android:inputType="numberDecimal"
         />
-    <TextView
-        android:layout_width="wrap_content"
+    <Space
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text=" = " />
+        android:layout_weight="1"
+        />
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -58,6 +58,6 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="calories" />
+        android:text="cal" />
 
 </LinearLayout>
