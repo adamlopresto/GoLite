@@ -21,7 +21,7 @@ public class FoodsTable {
 
     }
 
-    @SuppressWarnings({"unused", "EmptyMethod"})
+    @SuppressWarnings("EmptyMethod")
     public static void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
     }
 }

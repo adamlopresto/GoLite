@@ -6,10 +6,15 @@ import android.app.LoaderManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.CursorLoader;
+import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
@@ -18,6 +23,7 @@ import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.text.NumberFormat;
 import java.util.Date;
@@ -25,37 +31,25 @@ import java.util.Date;
 import fake.domain.adamlopresto.golite.db.DatabaseHelper;
 import fake.domain.adamlopresto.golite.db.HistoryTable;
 import fake.domain.adamlopresto.golite.db.ServingsView;
+import fake.domain.adamlopresto.golite.db.TotalsView;
 
 /**
  * A list fragment representing a list of Servings. This fragment
  * also supports tablet devices by allowing list items to be given an
  * 'activated' state upon selection. This helps indicate which item is
  * currently being viewed in a {@link ServingDetailFragment}.
- * <p>
+ * <p/>
  * Activities containing this fragment MUST implement the {@link Callbacks}
  * interface.
  */
-public class ServingListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor>{
+@SuppressWarnings("WeakerAccess")
+public class ServingListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
     /**
      * The serialization (saved instance state) Bundle key representing the
      * activated item position. Only used on tablets.
      */
     private static final String STATE_ACTIVATED_POSITION = "activated_position";
-
-    /**
-     * The fragment's current callback object, which is notified of list item
-     * clicks.
-     */
-    private Callbacks mCallbacks = sDummyCallbacks;
-
-    /**
-     * The current activated item position. Only used on tablets.
-     */
-    private int mActivatedPosition = ListView.INVALID_POSITION;
-
-    private ServingsViewAdapter adapter;
-
     private static final int INDEX_SERVING_ID = 0;
     private static final int INDEX_NAME = 1;
     private static final int INDEX_NUMBER = 2;
@@ -64,46 +58,6 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
     private static final int INDEX_FOOD = 5;
     private static final int INDEX_QUANTITY = 6;
     private static final int INDEX_HISTORY_ID = 7;
-
-    private final NumberFormat NUMBER_FORMAT = NumberFormat.getNumberInstance();
-
-    @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        return new CursorLoader(getActivity(), GoLiteContentProvider.SERVING_LISTED_URI,
-                new String[]{ServingsView.COLUMN_ID,
-                        ServingsView.COLUMN_NAME,
-                        ServingsView.COLUMN_NUMBER,
-                        ServingsView.COLUMN_UNIT,
-                        ServingsView.COLUMN_CAL,
-                        ServingsView.COLUMN_FOOD,
-                        ServingsView.COLUMN_QUANTITY,
-                        ServingsView.COLUMN_HISTORY_ID
-                },
-                null, null, ServingsView.COLUMN_NAME);
-    }
-
-    @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        adapter.swapCursor(data);
-    }
-
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-        adapter.swapCursor(null);
-    }
-
-    /**
-     * A callback interface that all activities containing this fragment must
-     * implement. This mechanism allows activities to be notified of item
-     * selections.
-     */
-    public interface Callbacks {
-        /**
-         * Callback for when an item has been selected.
-         */
-        public void onItemSelected(long id);
-    }
-
     /**
      * A dummy implementation of the {@link Callbacks} interface that does
      * nothing. Used only when this fragment is not attached to an activity.
@@ -113,6 +67,21 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
         public void onItemSelected(long id) {
         }
     };
+    private static final int SERVINGS_ID = 0;
+    private static final int TOTALS_ID = 1;
+    /**
+     * The fragment's current callback object, which is notified of list item
+     * clicks.
+     */
+    private Callbacks mCallbacks = sDummyCallbacks;
+    private final NumberFormat NUMBER_FORMAT = NumberFormat.getNumberInstance();
+    /**
+     * The current activated item position. Only used on tablets.
+     */
+    private int mActivatedPosition = ListView.INVALID_POSITION;
+    private ServingsViewAdapter adapter;
+
+    private TextView total;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -122,15 +91,100 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
     }
 
     @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        switch(id){
+            case SERVINGS_ID:
+                return new CursorLoader(getActivity(), GoLiteContentProvider.SERVING_LISTED_URI,
+                        new String[]{ServingsView.COLUMN_ID,
+                                ServingsView.COLUMN_NAME,
+                                ServingsView.COLUMN_NUMBER,
+                                ServingsView.COLUMN_UNIT,
+                                ServingsView.COLUMN_CAL,
+                                ServingsView.COLUMN_FOOD,
+                                ServingsView.COLUMN_QUANTITY,
+                                ServingsView.COLUMN_HISTORY_ID
+                        },
+                        null, null, ServingsView.COLUMN_NAME);
+            case TOTALS_ID:
+                return new CursorLoader(getActivity(), GoLiteContentProvider.DAILY_TOTAL_URI,
+                        new String[]{TotalsView.COLUMN_TOTAL},
+                        "date = ?", new String[]{DatabaseHelper.DATE_FORMAT.format(new Date())},
+                        null
+                        );
+            default:
+                throw new AssertionError("Attempting to load a Loader for invalid id");
+        }
+    }
+
+    @Override
+    public void onLoadFinished(@NotNull Loader<Cursor> loader, Cursor data) {
+        switch(loader.getId()){
+            case SERVINGS_ID:
+                adapter.swapCursor(data);
+                break;
+            case TOTALS_ID:
+                int totalNum = 0;
+                if (data.moveToFirst())
+                    totalNum = data.getInt(0);
+
+                int max = getActivity().getPreferences(Context.MODE_PRIVATE).getInt("calories_per_day_key", 1400);
+                total.setText(String.format("%d/%d", totalNum, max));
+                if (totalNum > max)
+                    total.setBackgroundColor(0xFFFF8888);
+                else
+                    total.setBackgroundColor(0xFF88FF88);
+
+                break;
+            default:
+                throw new AssertionError("Loader returned an invalid id");
+        }
+    }
+
+    @Override
+    public void onLoaderReset(@NotNull Loader<Cursor> loader) {
+        switch (loader.getId()){
+            case SERVINGS_ID:
+                adapter.swapCursor(null);
+                break;
+            case TOTALS_ID:
+                total.setText("0");
+                break;
+            default:
+                throw new AssertionError("Loader returned an invalid id");
+        }
+    }
+
+    /**
+     * Called to do initial creation of a fragment.  This is called after
+     * {@link #onAttach(android.app.Activity)} and before
+     * {@link #onCreateView(android.view.LayoutInflater, android.view.ViewGroup, android.os.Bundle)}.
+     * <p/>
+     * <p>Note that this can be called while the fragment's activity is
+     * still in the process of being created.  As such, you can not rely
+     * on things like the activity's content view hierarchy being initialized
+     * at this point.  If you want to do work once the activity itself is
+     * created, see {@link #onActivityCreated(android.os.Bundle)}.
+     *
+     * @param savedInstanceState If the fragment is being re-created from
+     *                           a previous saved state, this is the state.
+     */
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        setHasOptionsMenu(true);
+    }
 
+    @Nullable
+    @Override
+    public View onCreateView(@NotNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_main_list, container);
     }
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        total = (TextView)view.findViewById(R.id.total);
 
         // Restore the previously serialized activated item position.
         if (savedInstanceState != null
@@ -148,12 +202,31 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
             throw new IllegalStateException("Activity must implement fragment's callbacks.");
         }
 
-        setListAdapter(adapter = new ServingsViewAdapter());
+        setListAdapter(adapter = new ServingsViewAdapter(activity));
 
         //noinspection ConstantConditions
-        getLoaderManager().initLoader(0, null, this);
+        getLoaderManager().initLoader(SERVINGS_ID, null, this);
+        getLoaderManager().initLoader(TOTALS_ID, null, this);
 
         mCallbacks = (Callbacks) activity;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        menu.clear();
+        inflater.inflate(R.menu.main_menu, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.settings:
+                startActivity(new Intent(getActivity(), SettingsActivity.class));
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     @Override
@@ -173,9 +246,9 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
         if (adapter != null) {
             Cursor cursor = adapter.getCursor();
             if (cursor != null && !cursor.isClosed()) {
-               int pos = cursor.getPosition();
-                if (cursor.moveToPosition(position)){
-                    mCallbacks.onItemSelected(cursor.getLong(cursor.getColumnIndexOrThrow(ServingsView.COLUMN_FOOD)));
+                int pos = cursor.getPosition();
+                if (cursor.moveToPosition(position)) {
+                    mCallbacks.onItemSelected(cursor.getLong(INDEX_FOOD));
                     cursor.moveToPosition(pos);
                 }
             }
@@ -216,10 +289,32 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
         mActivatedPosition = position;
     }
 
-    private class ServingsViewAdapter extends ResourceCursorAdapter{
-        ServingsViewAdapter(){
-            super(getActivity(), R.layout.main_list_serving,
-                null, 0);
+    /**
+     * A callback interface that all activities containing this fragment must
+     * implement. This mechanism allows activities to be notified of item
+     * selections.
+     */
+    public interface Callbacks {
+        /**
+         * Callback for when an item has been selected.
+         */
+        public void onItemSelected(long id);
+    }
+
+    private static class ViewHolder {
+        CheckBox name;
+        TextView number;
+        TextView unit;
+        TextView cal;
+
+        long history_id = -1L;
+        long serving_id = -1L;
+    }
+
+    private class ServingsViewAdapter extends ResourceCursorAdapter {
+        ServingsViewAdapter(Context context) {
+            super(context, R.layout.main_list_serving,
+                    null, 0);
             /*
                 new String[]{ServingsView.COLUMN_NAME, ServingsView.COLUMN_NUMBER, ServingsView.COLUMN_UNIT,
                 ServingsView.COLUMN_CAL}, new int[]{R.id.name, R.id.number, R.id.units, R.id.calories}, 0);
@@ -238,7 +333,7 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
 
             holder.serving_id = cursor.getLong(INDEX_SERVING_ID);
 
-            if (cursor.isNull(INDEX_HISTORY_ID)){
+            if (cursor.isNull(INDEX_HISTORY_ID)) {
                 holder.history_id = -1L;
             } else {
                 holder.history_id = cursor.getLong(INDEX_HISTORY_ID);
@@ -247,16 +342,19 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
             holder.name.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (holder.name.isChecked()){
+                    if (holder.name.isChecked()) {
                         ContentValues cv = new ContentValues(3);
                         cv.put(HistoryTable.COLUMN_SERVING, holder.serving_id);
                         cv.put(HistoryTable.COLUMN_QUANTITY, 1);
                         cv.put(HistoryTable.COLUMN_DATE, DatabaseHelper.DATE_FORMAT.format(new Date()));
+                        //noinspection ConstantConditions
                         Uri newUri = v.getContext().getContentResolver().insert(GoLiteContentProvider.HISTORY_URI, cv);
+                        assert newUri != null;
                         holder.history_id = Long.valueOf(newUri.getLastPathSegment());
                     } else {
+                        //noinspection ConstantConditions
                         v.getContext().getContentResolver().delete(GoLiteContentProvider.HISTORY_URI,
-                                HistoryTable.COLUMN_ID+"=?", DatabaseHelper.idToArgs(holder.history_id));
+                                HistoryTable.COLUMN_ID + "=?", DatabaseHelper.idToArgs(holder.history_id));
                     }
 
                 }
@@ -267,26 +365,17 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
         @Override
         public View newView(Context context, Cursor cursor, ViewGroup parent) {
             View v = super.newView(context, cursor, parent);
+            assert v != null;
             ViewHolder holder = new ViewHolder();
-            holder.name   = (CheckBox)v.findViewById(R.id.name);
-            holder.number = (TextView)v.findViewById(R.id.number);
-            holder.unit   = (TextView)v.findViewById(R.id.units);
-            holder.cal    = (TextView)v.findViewById(R.id.calories);
+            holder.name = (CheckBox) v.findViewById(R.id.name);
+            holder.number = (TextView) v.findViewById(R.id.number);
+            holder.unit = (TextView) v.findViewById(R.id.units);
+            holder.cal = (TextView) v.findViewById(R.id.calories);
             v.setTag(holder);
             return v;
         }
 
 
-    }
-
-    private static class ViewHolder {
-        CheckBox name;
-        TextView number;
-        TextView unit;
-        TextView cal;
-
-        long history_id = -1L;
-        long serving_id = -1L;
     }
 }
 

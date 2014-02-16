@@ -17,6 +17,7 @@ import fake.domain.adamlopresto.golite.db.FoodsTable;
 import fake.domain.adamlopresto.golite.db.HistoryTable;
 import fake.domain.adamlopresto.golite.db.ServingsTable;
 import fake.domain.adamlopresto.golite.db.ServingsView;
+import fake.domain.adamlopresto.golite.db.TotalsView;
 
 @SuppressWarnings("WeakerAccess")
 public class GoLiteContentProvider extends ContentProvider {
@@ -31,6 +32,7 @@ public class GoLiteContentProvider extends ContentProvider {
     private static final int SERVINGS_LISTED = 4;
     private static final int HISTORY = 6;
     private static final int HISTORY_ID = 7;
+    private static final int DAILY_TOTAL = 8;
 
     private static final String AUTHORITY = "fake.domain.adamlopresto.golite";
 
@@ -50,6 +52,9 @@ public class GoLiteContentProvider extends ContentProvider {
     private static final String HISTORY_BASE_PATH = "history";
     @SuppressWarnings("WeakerAccess")
     public static final Uri HISTORY_URI = Uri.withAppendedPath(BASE, HISTORY_BASE_PATH);
+
+    private static final String DAILY_TOTAL_BASE_PATH = "daily_total";
+    public static final Uri DAILY_TOTAL_URI = Uri.withAppendedPath(BASE, DAILY_TOTAL_BASE_PATH);
 	/*
 	public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE
 			+ "/GoShopItems";
@@ -68,6 +73,7 @@ public class GoLiteContentProvider extends ContentProvider {
         sURIMatcher.addURI(AUTHORITY, SERVING_LISTED_PATH, SERVINGS_LISTED);
         sURIMatcher.addURI(AUTHORITY, HISTORY_BASE_PATH, HISTORY);
         sURIMatcher.addURI(AUTHORITY, HISTORY_BASE_PATH+"/#", HISTORY_ID);
+        sURIMatcher.addURI(AUTHORITY, DAILY_TOTAL_BASE_PATH, DAILY_TOTAL);
     }
 
     @Override
@@ -109,6 +115,10 @@ public class GoLiteContentProvider extends ContentProvider {
                 queryBuilder.setTables(HistoryTable.TABLE);
                 uri = HISTORY_URI;
                 break;
+            case DAILY_TOTAL:
+                queryBuilder.setTables(TotalsView.VIEW);
+                uri = DAILY_TOTAL_URI;
+                break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
         }
@@ -141,18 +151,27 @@ public class GoLiteContentProvider extends ContentProvider {
         switch (uriType) {
             case FOODS:
                 rowsUpdated = sqlDB.delete(FoodsTable.TABLE, selection, selectionArgs);
-                if (rowsUpdated > 0)
+                if (rowsUpdated > 0){
                     helper.notifyChange(FOOD_URI);
+                    helper.notifyChange(SERVING_URI);
+                    helper.notifyChange(HISTORY_URI);
+                    helper.notifyChange(DAILY_TOTAL_URI);
+                }
                 return rowsUpdated;
             case SERVINGS:
                 rowsUpdated = sqlDB.delete(ServingsTable.TABLE, selection, selectionArgs);
-                if (rowsUpdated > 0)
+                if (rowsUpdated > 0){
                    helper.notifyChange(SERVING_URI);
+                    helper.notifyChange(HISTORY_URI);
+                    helper.notifyChange(DAILY_TOTAL_URI);
+                }
                 return rowsUpdated;
             case HISTORY:
                 rowsUpdated = sqlDB.delete(HistoryTable.TABLE, selection, selectionArgs);
-                if (rowsUpdated > 0)
+                if (rowsUpdated > 0){
                     helper.notifyChange(HISTORY_URI);
+                    helper.notifyChange(DAILY_TOTAL_URI);
+                }
                 return rowsUpdated;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
@@ -179,6 +198,7 @@ public class GoLiteContentProvider extends ContentProvider {
                 break;
             case HISTORY:
                 id = sqlDB.insertOrThrow(HistoryTable.TABLE, null, values);
+                helper.notifyChange(DAILY_TOTAL_URI);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
@@ -210,13 +230,18 @@ public class GoLiteContentProvider extends ContentProvider {
                 return rowsUpdated;
             case SERVINGS:
                 rowsUpdated = sqlDB.update(ServingsTable.TABLE, values, selection, selectionArgs);
-                if (rowsUpdated > 0)
+                if (rowsUpdated > 0){
                     helper.notifyChange(SERVING_URI);
+                    helper.notifyChange(HISTORY_URI);
+                    helper.notifyChange(DAILY_TOTAL_URI);
+                }
                 return rowsUpdated;
             case HISTORY:
                 rowsUpdated = sqlDB.update(HistoryTable.TABLE, values, selection, selectionArgs);
-                if (rowsUpdated > 0)
+                if (rowsUpdated > 0){
                     helper.notifyChange(HISTORY_URI);
+                    helper.notifyChange(DAILY_TOTAL_URI);
+                }
                 return rowsUpdated;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);

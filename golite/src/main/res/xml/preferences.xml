@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <EditTextPreference
+        android:key="calories_per_day_key"
+        android:title="@string/calories_per_day_title"
+        android:defaultValue="1600"
+        android:numeric="integer"
+
+        />
+
+
+</PreferenceScreen>

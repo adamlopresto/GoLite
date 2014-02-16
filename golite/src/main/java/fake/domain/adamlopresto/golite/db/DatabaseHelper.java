@@ -10,7 +10,7 @@ import java.text.SimpleDateFormat;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
-    private static final int CURRENT_VERSION = 2;
+    private static final int CURRENT_VERSION = 3;
     private static final String DATABASE_NAME = "GoLite";
 
     public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
@@ -36,6 +36,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         ServingsTable.onCreate(db);
         HistoryTable.onCreate(db);
         ServingsView.onCreate(db);
+        TotalsView.onCreate(db);
     }
 
     @Override
@@ -44,6 +45,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         ServingsTable.onUpgrade(db, oldVersion, newVersion);
         HistoryTable.onUpgrade(db, oldVersion, newVersion);
         ServingsView.onUpgrade(db, oldVersion, newVersion);
+        TotalsView.onUpgrade(db, oldVersion, newVersion);
     }
 
     @Override
