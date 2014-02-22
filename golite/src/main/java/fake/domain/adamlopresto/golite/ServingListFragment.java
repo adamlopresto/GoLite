@@ -6,15 +6,12 @@ import android.app.LoaderManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.CursorLoader;
-import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
@@ -127,7 +124,8 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
                 if (data.moveToFirst())
                     totalNum = data.getInt(0);
 
-                int max = getActivity().getPreferences(Context.MODE_PRIVATE).getInt("calories_per_day_key", 1400);
+                assert getActivity() != null;
+                int max = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(getActivity()).getString("calories_per_day_key", "1400"));
                 total.setText(String.format("%d/%d", totalNum, max));
                 if (totalNum > max)
                     total.setBackgroundColor(0xFFFF8888);
@@ -152,27 +150,6 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
             default:
                 throw new AssertionError("Loader returned an invalid id");
         }
-    }
-
-    /**
-     * Called to do initial creation of a fragment.  This is called after
-     * {@link #onAttach(android.app.Activity)} and before
-     * {@link #onCreateView(android.view.LayoutInflater, android.view.ViewGroup, android.os.Bundle)}.
-     * <p/>
-     * <p>Note that this can be called while the fragment's activity is
-     * still in the process of being created.  As such, you can not rely
-     * on things like the activity's content view hierarchy being initialized
-     * at this point.  If you want to do work once the activity itself is
-     * created, see {@link #onActivityCreated(android.os.Bundle)}.
-     *
-     * @param savedInstanceState If the fragment is being re-created from
-     *                           a previous saved state, this is the state.
-     */
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        setHasOptionsMenu(true);
     }
 
     @Nullable
@@ -209,24 +186,6 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
         getLoaderManager().initLoader(TOTALS_ID, null, this);
 
         mCallbacks = (Callbacks) activity;
-    }
-
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
-        menu.clear();
-        inflater.inflate(R.menu.main_menu, menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()){
-            case R.id.settings:
-                startActivity(new Intent(getActivity(), SettingsActivity.class));
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
     }
 
     @Override

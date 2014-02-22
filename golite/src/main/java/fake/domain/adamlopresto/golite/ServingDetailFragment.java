@@ -61,8 +61,7 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
     public View onCreateView(@NotNull LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_serving_detail, container, false);
-
-        if (rootView == null) throw new AssertionError();
+        assert rootView != null;
         name = (EditText) rootView.findViewById(R.id.name);
         notes = (EditText) rootView.findViewById(R.id.notes);
 
