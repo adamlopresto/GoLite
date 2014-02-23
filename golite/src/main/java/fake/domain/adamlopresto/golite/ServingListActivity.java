@@ -15,11 +15,11 @@ import android.view.MenuItem;
  * lead to a {@link ServingDetailActivity} representing
  * item details. On tablets, the activity presents the list of items and
  * item details side-by-side using two vertical panes.
- * <p>
+ * <p/>
  * The activity makes heavy use of fragments. The list of items is a
  * {@link ServingListFragment} and the item details
  * (if present) is a {@link ServingDetailFragment}.
- * <p>
+ * <p/>
  * This activity also implements the required
  * {@link ServingListFragment.Callbacks} interface
  * to listen for item selections.
@@ -64,7 +64,7 @@ public class ServingListActivity extends Activity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()){
+        switch (item.getItemId()) {
             case R.id.settings:
                 startActivity(new Intent(this, SettingsActivity.class));
                 return true;

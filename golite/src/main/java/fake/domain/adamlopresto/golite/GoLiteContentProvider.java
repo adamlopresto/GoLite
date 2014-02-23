@@ -45,7 +45,7 @@ public class GoLiteContentProvider extends ContentProvider {
     public static final Uri SERVING_URI = Uri.withAppendedPath(BASE, SERVING_BASE_PATH);
 
     @SuppressWarnings("WeakerAccess")
-    public static final String SERVING_LISTED_PATH = SERVING_BASE_PATH+"/listed";
+    public static final String SERVING_LISTED_PATH = SERVING_BASE_PATH + "/listed";
     @SuppressWarnings("unused")
     public static final Uri SERVING_LISTED_URI = Uri.withAppendedPath(BASE, SERVING_LISTED_PATH);
 
@@ -55,7 +55,7 @@ public class GoLiteContentProvider extends ContentProvider {
 
     private static final String DAILY_TOTAL_BASE_PATH = "daily_total";
     public static final Uri DAILY_TOTAL_URI = Uri.withAppendedPath(BASE, DAILY_TOTAL_BASE_PATH);
-	/*
+    /*
 	public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE
 			+ "/GoShopItems";
 	public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE
@@ -67,12 +67,12 @@ public class GoLiteContentProvider extends ContentProvider {
 
     static {
         sURIMatcher.addURI(AUTHORITY, FOOD_BASE_PATH, FOODS);
-        sURIMatcher.addURI(AUTHORITY, FOOD_BASE_PATH+"/#", FOOD_ID);
+        sURIMatcher.addURI(AUTHORITY, FOOD_BASE_PATH + "/#", FOOD_ID);
         sURIMatcher.addURI(AUTHORITY, SERVING_BASE_PATH, SERVINGS);
-        sURIMatcher.addURI(AUTHORITY, SERVING_BASE_PATH+"/#", SERVING_ID);
+        sURIMatcher.addURI(AUTHORITY, SERVING_BASE_PATH + "/#", SERVING_ID);
         sURIMatcher.addURI(AUTHORITY, SERVING_LISTED_PATH, SERVINGS_LISTED);
         sURIMatcher.addURI(AUTHORITY, HISTORY_BASE_PATH, HISTORY);
-        sURIMatcher.addURI(AUTHORITY, HISTORY_BASE_PATH+"/#", HISTORY_ID);
+        sURIMatcher.addURI(AUTHORITY, HISTORY_BASE_PATH + "/#", HISTORY_ID);
         sURIMatcher.addURI(AUTHORITY, DAILY_TOTAL_BASE_PATH, DAILY_TOTAL);
     }
 
@@ -92,7 +92,7 @@ public class GoLiteContentProvider extends ContentProvider {
         int uriType = sURIMatcher.match(uri);
 
         //If it's odd, then it has an ID appended.
-        if ((uriType % 2) == 1){
+        if ((uriType % 2) == 1) {
             String id = uri.getLastPathSegment();
             selection = appendSelection(selection, "_id = ?");
             selectionArgs = appendSelectionArg(selectionArgs, id);
@@ -141,7 +141,7 @@ public class GoLiteContentProvider extends ContentProvider {
         int rowsUpdated;
 
         //If it's odd, then it has an ID appended.
-        if ((uriType % 2) == 1){
+        if ((uriType % 2) == 1) {
             String id = uri.getLastPathSegment();
             selection = appendSelection(selection, "_id = ?");
             selectionArgs = appendSelectionArg(selectionArgs, id);
@@ -151,7 +151,7 @@ public class GoLiteContentProvider extends ContentProvider {
         switch (uriType) {
             case FOODS:
                 rowsUpdated = sqlDB.delete(FoodsTable.TABLE, selection, selectionArgs);
-                if (rowsUpdated > 0){
+                if (rowsUpdated > 0) {
                     helper.notifyChange(FOOD_URI);
                     helper.notifyChange(SERVING_URI);
                     helper.notifyChange(HISTORY_URI);
@@ -160,15 +160,15 @@ public class GoLiteContentProvider extends ContentProvider {
                 return rowsUpdated;
             case SERVINGS:
                 rowsUpdated = sqlDB.delete(ServingsTable.TABLE, selection, selectionArgs);
-                if (rowsUpdated > 0){
-                   helper.notifyChange(SERVING_URI);
+                if (rowsUpdated > 0) {
+                    helper.notifyChange(SERVING_URI);
                     helper.notifyChange(HISTORY_URI);
                     helper.notifyChange(DAILY_TOTAL_URI);
                 }
                 return rowsUpdated;
             case HISTORY:
                 rowsUpdated = sqlDB.delete(HistoryTable.TABLE, selection, selectionArgs);
-                if (rowsUpdated > 0){
+                if (rowsUpdated > 0) {
                     helper.notifyChange(HISTORY_URI);
                     helper.notifyChange(DAILY_TOTAL_URI);
                 }
@@ -215,7 +215,7 @@ public class GoLiteContentProvider extends ContentProvider {
         int rowsUpdated;
 
         //If it's odd, then it has an ID appended.
-        if ((uriType % 2) == 1){
+        if ((uriType % 2) == 1) {
             String id = uri.getLastPathSegment();
             selection = appendSelection(selection, "_id = ?");
             selectionArgs = appendSelectionArg(selectionArgs, id);
@@ -230,7 +230,7 @@ public class GoLiteContentProvider extends ContentProvider {
                 return rowsUpdated;
             case SERVINGS:
                 rowsUpdated = sqlDB.update(ServingsTable.TABLE, values, selection, selectionArgs);
-                if (rowsUpdated > 0){
+                if (rowsUpdated > 0) {
                     helper.notifyChange(SERVING_URI);
                     helper.notifyChange(HISTORY_URI);
                     helper.notifyChange(DAILY_TOTAL_URI);
@@ -238,7 +238,7 @@ public class GoLiteContentProvider extends ContentProvider {
                 return rowsUpdated;
             case HISTORY:
                 rowsUpdated = sqlDB.update(HistoryTable.TABLE, values, selection, selectionArgs);
-                if (rowsUpdated > 0){
+                if (rowsUpdated > 0) {
                     helper.notifyChange(HISTORY_URI);
                     helper.notifyChange(DAILY_TOTAL_URI);
                 }
@@ -248,26 +248,26 @@ public class GoLiteContentProvider extends ContentProvider {
         }
     }
 
-    private static String appendSelection(String original, String newSelection){
+    private static String appendSelection(String original, String newSelection) {
         return DatabaseUtils.concatenateWhere(original, newSelection);
     }
 
-    private static String[] appendSelectionArgs(String originalValues[], String newValues[]){
-        if (originalValues == null){
+    private static String[] appendSelectionArgs(String originalValues[], String newValues[]) {
+        if (originalValues == null) {
             return newValues;
         }
-        if (newValues == null){
+        if (newValues == null) {
             return originalValues;
         }
         return DatabaseUtils.appendSelectionArgs(originalValues, newValues);
     }
 
-    private static String[] appendSelectionArg(String[] originalValues, String newValue){
+    private static String[] appendSelectionArg(String[] originalValues, String newValue) {
         return appendSelectionArgs(originalValues, new String[]{newValue});
     }
 
-    private void setNotificationUri(Cursor cursor, Uri uri){
-        if (cursor != null){
+    private void setNotificationUri(Cursor cursor, Uri uri) {
+        if (cursor != null) {
             Context context = getContext();
             if (context != null) {
                 ContentResolver resolver = context.getContentResolver();
@@ -279,7 +279,7 @@ public class GoLiteContentProvider extends ContentProvider {
         }
     }
 
-    private SQLiteDatabase getWritableDatabase(){
+    private SQLiteDatabase getWritableDatabase() {
         SQLiteDatabase db = helper.getWritableDatabase();
         if (db == null) {
             throw new SQLiteException("Could not open writable database");

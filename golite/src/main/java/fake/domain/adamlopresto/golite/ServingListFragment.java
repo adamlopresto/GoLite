@@ -71,7 +71,9 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
      * clicks.
      */
     private Callbacks mCallbacks = sDummyCallbacks;
-    private final NumberFormat NUMBER_FORMAT = NumberFormat.getNumberInstance();
+    private static final NumberFormat NUMBER_FORMAT = NumberFormat.getNumberInstance();
+
+    public static String activeDate = DatabaseHelper.DATE_FORMAT.format(new Date());
     /**
      * The current activated item position. Only used on tablets.
      */
@@ -89,7 +91,7 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        switch(id){
+        switch (id) {
             case SERVINGS_ID:
                 return new CursorLoader(getActivity(), GoLiteContentProvider.SERVING_LISTED_URI,
                         new String[]{ServingsView.COLUMN_ID,
@@ -105,9 +107,9 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
             case TOTALS_ID:
                 return new CursorLoader(getActivity(), GoLiteContentProvider.DAILY_TOTAL_URI,
                         new String[]{TotalsView.COLUMN_TOTAL},
-                        "date = ?", new String[]{DatabaseHelper.DATE_FORMAT.format(new Date())},
+                        "date = ?", new String[]{activeDate},
                         null
-                        );
+                );
             default:
                 throw new AssertionError("Attempting to load a Loader for invalid id");
         }
@@ -115,7 +117,7 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
 
     @Override
     public void onLoadFinished(@NotNull Loader<Cursor> loader, Cursor data) {
-        switch(loader.getId()){
+        switch (loader.getId()) {
             case SERVINGS_ID:
                 adapter.swapCursor(data);
                 break;
@@ -140,7 +142,7 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
 
     @Override
     public void onLoaderReset(@NotNull Loader<Cursor> loader) {
-        switch (loader.getId()){
+        switch (loader.getId()) {
             case SERVINGS_ID:
                 adapter.swapCursor(null);
                 break;
@@ -161,7 +163,7 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        total = (TextView)view.findViewById(R.id.total);
+        total = (TextView) view.findViewById(R.id.total);
 
         // Restore the previously serialized activated item position.
         if (savedInstanceState != null
@@ -260,35 +262,62 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
         public void onItemSelected(long id);
     }
 
-    private static class ViewHolder {
-        CheckBox name;
-        TextView number;
-        TextView unit;
-        TextView cal;
+    private static class ViewHolder implements View.OnClickListener {
+        CheckBox nameView;
+        TextView numberView; //shows number*qty if qty is set
+        TextView unitView;
+        TextView calView;
+
+        double number; //alwasy the number in one serving
+        double cal; //always the calories for one serving; display will adjust
 
         long history_id = -1L;
         long serving_id = -1L;
+
+        /**
+         * Called when a view has been clicked.
+         *
+         * @param v The view that was clicked.
+         */
+        @Override
+        public void onClick(View v) {
+            if (nameView.isChecked()) {
+                ContentValues cv = new ContentValues(3);
+                cv.put(HistoryTable.COLUMN_SERVING, serving_id);
+                cv.put(HistoryTable.COLUMN_QUANTITY, 1);
+                cv.put(HistoryTable.COLUMN_DATE, DatabaseHelper.DATE_FORMAT.format(new Date()));
+                //noinspection ConstantConditions
+                Uri newUri = v.getContext().getContentResolver().insert(GoLiteContentProvider.HISTORY_URI, cv);
+                assert newUri != null;
+                history_id = Long.valueOf(newUri.getLastPathSegment());
+            } else {
+                //noinspection ConstantConditions
+                v.getContext().getContentResolver().delete(GoLiteContentProvider.HISTORY_URI,
+                        HistoryTable.COLUMN_ID + "=?", DatabaseHelper.idToArgs(history_id));
+
+                numberView.setText(NUMBER_FORMAT.format(number));
+                calView.setText(NUMBER_FORMAT.format(cal));
+            }
+
+        }
     }
 
     private class ServingsViewAdapter extends ResourceCursorAdapter {
         ServingsViewAdapter(Context context) {
-            super(context, R.layout.main_list_serving,
-                    null, 0);
-            /*
-                new String[]{ServingsView.COLUMN_NAME, ServingsView.COLUMN_NUMBER, ServingsView.COLUMN_UNIT,
-                ServingsView.COLUMN_CAL}, new int[]{R.id.name, R.id.number, R.id.units, R.id.calories}, 0);
-            */
+            super(context, R.layout.main_list_serving, null, 0);
         }
 
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
             final ViewHolder holder = (ViewHolder) view.getTag();
-            holder.name.setText(cursor.getString(INDEX_NAME));
+            holder.nameView.setText(cursor.getString(INDEX_NAME));
             double qty = cursor.isNull(INDEX_QUANTITY) ? 1 : cursor.getDouble(INDEX_QUANTITY);
-            holder.name.setChecked(!cursor.isNull(INDEX_HISTORY_ID));
-            holder.number.setText(NUMBER_FORMAT.format(qty * cursor.getDouble(INDEX_NUMBER)));
-            holder.unit.setText(cursor.getString(INDEX_UNIT));
-            holder.cal.setText(NUMBER_FORMAT.format(qty * cursor.getDouble(INDEX_CAL)));
+            holder.nameView.setChecked(!cursor.isNull(INDEX_HISTORY_ID));
+            holder.number = cursor.getDouble(INDEX_NUMBER);
+            holder.numberView.setText(NUMBER_FORMAT.format(qty * holder.number));
+            holder.unitView.setText(cursor.getString(INDEX_UNIT));
+            holder.cal = cursor.getDouble(INDEX_CAL);
+            holder.calView.setText(NUMBER_FORMAT.format(qty * holder.cal));
 
             holder.serving_id = cursor.getLong(INDEX_SERVING_ID);
 
@@ -298,26 +327,6 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
                 holder.history_id = cursor.getLong(INDEX_HISTORY_ID);
             }
 
-            holder.name.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (holder.name.isChecked()) {
-                        ContentValues cv = new ContentValues(3);
-                        cv.put(HistoryTable.COLUMN_SERVING, holder.serving_id);
-                        cv.put(HistoryTable.COLUMN_QUANTITY, 1);
-                        cv.put(HistoryTable.COLUMN_DATE, DatabaseHelper.DATE_FORMAT.format(new Date()));
-                        //noinspection ConstantConditions
-                        Uri newUri = v.getContext().getContentResolver().insert(GoLiteContentProvider.HISTORY_URI, cv);
-                        assert newUri != null;
-                        holder.history_id = Long.valueOf(newUri.getLastPathSegment());
-                    } else {
-                        //noinspection ConstantConditions
-                        v.getContext().getContentResolver().delete(GoLiteContentProvider.HISTORY_URI,
-                                HistoryTable.COLUMN_ID + "=?", DatabaseHelper.idToArgs(holder.history_id));
-                    }
-
-                }
-            });
         }
 
         @NotNull
@@ -326,10 +335,12 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
             View v = super.newView(context, cursor, parent);
             assert v != null;
             ViewHolder holder = new ViewHolder();
-            holder.name = (CheckBox) v.findViewById(R.id.name);
-            holder.number = (TextView) v.findViewById(R.id.number);
-            holder.unit = (TextView) v.findViewById(R.id.units);
-            holder.cal = (TextView) v.findViewById(R.id.calories);
+            holder.nameView = (CheckBox) v.findViewById(R.id.name);
+            holder.numberView = (TextView) v.findViewById(R.id.number);
+            holder.unitView = (TextView) v.findViewById(R.id.units);
+            holder.calView = (TextView) v.findViewById(R.id.calories);
+
+            holder.nameView.setOnClickListener(holder);
             v.setTag(holder);
             return v;
         }

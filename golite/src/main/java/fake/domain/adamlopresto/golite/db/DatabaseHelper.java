@@ -21,12 +21,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public static DatabaseHelper getInstance(Context context) {
         if (instance == null)
-           instance = new DatabaseHelper(context.getApplicationContext());
+            instance = new DatabaseHelper(context.getApplicationContext());
         return instance;
     }
 
-    private DatabaseHelper (Context context){
-        super(context, context.getExternalFilesDir(null)+"/"+DATABASE_NAME, null, CURRENT_VERSION);
+    private DatabaseHelper(Context context) {
+        super(context, context.getExternalFilesDir(null) + "/" + DATABASE_NAME, null, CURRENT_VERSION);
         this.context = context;
     }
 
@@ -49,17 +49,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     @Override
-    public void onOpen(SQLiteDatabase db){
+    public void onOpen(SQLiteDatabase db) {
         db.execSQL("PRAGMA foreign_keys = ON;");
     }
 
-    public void notifyChange(Uri uri){
+    public void notifyChange(Uri uri) {
         ContentResolver resolver = context.getContentResolver();
         if (resolver != null)
             resolver.notifyChange(uri, null);
     }
 
-    public static String[] idToArgs(long id){
+    public static String[] idToArgs(long id) {
         return new String[]{String.valueOf(id)};
     }
 

@@ -23,7 +23,9 @@
         <activity
             android:name="fake.domain.adamlopresto.golite.ServingDetailActivity"
             android:label="@string/title_serving_detail"
-            android:parentActivityName="fake.domain.adamlopresto.golite.ServingListActivity" >
+            android:parentActivityName="fake.domain.adamlopresto.golite.ServingListActivity"
+            android:windowSoftInputMode="stateHidden"
+            >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="fake.domain.adamlopresto.golite.ServingListActivity" />

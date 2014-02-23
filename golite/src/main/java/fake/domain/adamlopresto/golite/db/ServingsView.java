@@ -22,32 +22,32 @@ public class ServingsView {
 
 
     public static void onCreate(SQLiteDatabase db) {
-        db.execSQL("CREATE VIEW "+VIEW
-                +" AS SELECT "
-                + ServingsTable.TABLE+"."+COLUMN_ID + " AS "+COLUMN_ID+", "
-                + COLUMN_FOOD   + ", "
-                + COLUMN_NAME   + ", "
+        db.execSQL("CREATE VIEW " + VIEW
+                + " AS SELECT "
+                + ServingsTable.TABLE + "." + COLUMN_ID + " AS " + COLUMN_ID + ", "
+                + COLUMN_FOOD + ", "
+                + COLUMN_NAME + ", "
                 + COLUMN_FOOD_NOTES + ", "
                 + COLUMN_NUMBER + ", "
-                + COLUMN_UNIT   + ", "
-                + COLUMN_CAL    + ", "
+                + COLUMN_UNIT + ", "
+                + COLUMN_CAL + ", "
                 + COLUMN_LISTED + ", "
                 + COLUMN_QUANTITY + ", "
-                + HistoryTable.TABLE+"."+HistoryTable.COLUMN_ID+" AS "+COLUMN_HISTORY_ID
-                +" FROM "+FoodsTable.TABLE+" INNER JOIN "+ServingsTable.TABLE
-                +" ON "+FoodsTable.TABLE+"."+FoodsTable.COLUMN_ID+"="
-                +ServingsTable.TABLE+"."+ServingsTable.COLUMN_FOOD
-                +" LEFT OUTER JOIN "+HistoryTable.TABLE+" ON "
-                +ServingsTable.TABLE+"."+ServingsTable.COLUMN_ID+"="
-                +HistoryTable.TABLE+"."+HistoryTable.COLUMN_SERVING
-                +" AND "+HistoryTable.TABLE+"."+HistoryTable.COLUMN_DATE+"=DATE('NOW', 'LOCALTIME')"
+                + HistoryTable.TABLE + "." + HistoryTable.COLUMN_ID + " AS " + COLUMN_HISTORY_ID
+                + " FROM " + FoodsTable.TABLE + " INNER JOIN " + ServingsTable.TABLE
+                + " ON " + FoodsTable.TABLE + "." + FoodsTable.COLUMN_ID + "="
+                + ServingsTable.TABLE + "." + ServingsTable.COLUMN_FOOD
+                + " LEFT OUTER JOIN " + HistoryTable.TABLE + " ON "
+                + ServingsTable.TABLE + "." + ServingsTable.COLUMN_ID + "="
+                + HistoryTable.TABLE + "." + HistoryTable.COLUMN_SERVING
+                + " AND " + HistoryTable.TABLE + "." + HistoryTable.COLUMN_DATE + "=DATE('NOW', 'LOCALTIME')"
         );
     }
 
     @SuppressWarnings("UnusedParameters")
     public static void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        if (oldVersion < 2){
-            db.execSQL("DROP VIEW "+VIEW);
+        if (oldVersion < 2) {
+            db.execSQL("DROP VIEW " + VIEW);
             onCreate(db);
         }
     }

@@ -4,7 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="fake.domain.adamlopresto.golite.ServingDetailFragment"
-    tools:ignore="MergeRootFrame" >
+    tools:ignore="MergeRootFrame"
+    android:focusable="false">
 
 <EditText
 android:layout_width="match_parent"
@@ -34,5 +35,7 @@ android:layout_height="wrap_content"
 android:id="@android:id/list"
 android:layout_below="@+id/notes"
 android:layout_alignParentLeft="true"
-android:layout_alignParentStart="true" />
+android:layout_alignParentStart="true"
+android:descendantFocusability="afterDescendants"
+    />
 </RelativeLayout>

@@ -22,18 +22,18 @@ public class ServingsTable {
      */
 
     public static void onCreate(SQLiteDatabase db) {
-        db.execSQL("CREATE TABLE "+TABLE
-                +" ("
-                + COLUMN_ID +" INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + COLUMN_FOOD +" INTEGER REFERENCES "+FoodsTable.TABLE+" ON DELETE CASCADE, "
-                + COLUMN_NUMBER+" NUMERIC NOT NULL, "
-                + COLUMN_UNIT+" TEXT, "
-                + COLUMN_CAL+" NUMERIC, "
-                + COLUMN_LISTED+" BOOLEAN NOT NULL "
-                +")"
+        db.execSQL("CREATE TABLE " + TABLE
+                + " ("
+                + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + COLUMN_FOOD + " INTEGER REFERENCES " + FoodsTable.TABLE + " ON DELETE CASCADE, "
+                + COLUMN_NUMBER + " NUMERIC NOT NULL, "
+                + COLUMN_UNIT + " TEXT, "
+                + COLUMN_CAL + " NUMERIC, "
+                + COLUMN_LISTED + " BOOLEAN NOT NULL "
+                + ")"
         );
 
-        db.execSQL("CREATE INDEX servings_food ON "+TABLE+" ("+COLUMN_FOOD+")");
+        db.execSQL("CREATE INDEX servings_food ON " + TABLE + " (" + COLUMN_FOOD + ")");
     }
 
     @SuppressWarnings({"UnusedParameters", "EmptyMethod"})

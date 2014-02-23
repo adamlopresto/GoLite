@@ -11,12 +11,12 @@ public class FoodsTable {
     public static final String COLUMN_NOTES = "food_notes";
 
     public static void onCreate(SQLiteDatabase db) {
-        db.execSQL("CREATE TABLE "+TABLE
-                +" ("
-                + COLUMN_ID +" INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + COLUMN_NAME +" TEXT NOT NULL UNIQUE COLLATE NOCASE, "
-                + COLUMN_NOTES +" TEXT"
-                +")"
+        db.execSQL("CREATE TABLE " + TABLE
+                + " ("
+                + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + COLUMN_NAME + " TEXT NOT NULL UNIQUE COLLATE NOCASE, "
+                + COLUMN_NOTES + " TEXT"
+                + ")"
         );
 
     }
