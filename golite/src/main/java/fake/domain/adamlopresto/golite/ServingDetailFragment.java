@@ -207,7 +207,7 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
             double newQty = 0;
             try {
                 //noinspection ConstantConditions
-                newQty = Long.parseLong(quantityView.getText().toString());
+                newQty = Double.parseDouble(quantityView.getText().toString());
             } catch (NumberFormatException | NullPointerException ignored) {
                 //noop
             }
