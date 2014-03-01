@@ -3,9 +3,6 @@ package fake.domain.adamlopresto.golite;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 
 
 /**
@@ -54,25 +51,6 @@ public class ServingListActivity extends Activity
         }
 
     }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.main_menu, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.settings:
-                startActivity(new Intent(this, SettingsActivity.class));
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
-
     /**
      * Callback method from {@link ServingListFragment.Callbacks}
      * indicating that the item with the given ID was selected.

@@ -11,13 +11,19 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.ResourceCursorAdapter;
+import android.widget.SearchView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -40,7 +46,7 @@ import fake.domain.adamlopresto.golite.db.TotalsView;
  * interface.
  */
 @SuppressWarnings("WeakerAccess")
-public class ServingListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
+public class ServingListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor>, SearchView.OnQueryTextListener {
 
     /**
      * The serialization (saved instance state) Bundle key representing the
@@ -64,13 +70,13 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
         public void onItemSelected(long id) {
         }
     };
-    private static final int SERVINGS_ID = 0;
-    private static final int TOTALS_ID = 1;
     /**
      * The fragment's current callback object, which is notified of list item
      * clicks.
      */
     private Callbacks mCallbacks = sDummyCallbacks;
+    private static final int SERVINGS_ID = 0;
+    private static final int TOTALS_ID = 1;
     private static final NumberFormat NUMBER_FORMAT = NumberFormat.getNumberInstance();
 
     public static String activeDate = DatabaseHelper.DATE_FORMAT.format(new Date());
@@ -81,6 +87,8 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
     private ServingsViewAdapter adapter;
 
     private TextView total;
+
+    private String query;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -93,6 +101,14 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         switch (id) {
             case SERVINGS_ID:
+
+                String selection = null;
+                String[] selectionArgs = null;
+                if (null != query){
+                    selection = ServingsView.COLUMN_NAME + " LIKE ?";
+                    selectionArgs = new String[]{"%"+query+"%"};
+                }
+
                 return new CursorLoader(getActivity(), GoLiteContentProvider.SERVING_LISTED_URI,
                         new String[]{ServingsView.COLUMN_ID,
                                 ServingsView.COLUMN_NAME,
@@ -103,7 +119,7 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
                                 ServingsView.COLUMN_QUANTITY,
                                 ServingsView.COLUMN_HISTORY_ID
                         },
-                        null, null, ServingsView.COLUMN_NAME);
+                        selection, selectionArgs, ServingsView.COLUMN_NAME);
             case TOTALS_ID:
                 return new CursorLoader(getActivity(), GoLiteContentProvider.DAILY_TOTAL_URI,
                         new String[]{TotalsView.COLUMN_TOTAL},
@@ -154,6 +170,26 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
         }
     }
 
+    /**
+     * Called when the fragment's activity has been created and this
+     * fragment's view hierarchy instantiated.  It can be used to do final
+     * initialization once these pieces are in place, such as retrieving
+     * views or restoring state.  It is also useful for fragments that use
+     * {@link #setRetainInstance(boolean)} to retain their instance,
+     * as this callback tells the fragment when it is fully associated with
+     * the new activity instance.  This is called after {@link #onCreateView}
+     * and before {@link #onViewStateRestored(android.os.Bundle)}.
+     *
+     * @param savedInstanceState If the fragment is being re-created from
+     *                           a previous saved state, this is the state.
+     */
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        setHasOptionsMenu(true);
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NotNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -188,6 +224,26 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
         getLoaderManager().initLoader(TOTALS_ID, null, this);
 
         mCallbacks = (Callbacks) activity;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        query = null;
+        getLoaderManager().restartLoader(SERVINGS_ID, null, this);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.main_menu, menu);
+        SearchView searchView = (SearchView)menu.findItem(R.id.search).getActionView();
+        assert searchView != null;
+        searchView.setOnQueryTextListener(this);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -248,6 +304,42 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
         }
 
         mActivatedPosition = position;
+    }
+
+    /**
+     * Called when the user submits the query. This could be due to a key press on the
+     * keyboard or due to pressing a submit button.
+     * The listener can override the standard behavior by returning true
+     * to indicate that it has handled the submit request. Otherwise return false to
+     * let the SearchView handle the submission by launching any associated intent.
+     *
+     * @param query the query text that is to be submitted
+     * @return true if the query has been handled by the listener, false to let the
+     * SearchView perform the default action.
+     */
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        Toast.makeText(getActivity(), "Searching for: " + query + "...", Toast.LENGTH_SHORT).show();
+        return false;
+    }
+
+    /**
+     * Called when the query text is changed by the user.
+     *
+     * @param newText the new content of the query text field.
+     * @return false if the SearchView should perform the default action of showing any
+     * suggestions if available, true if the action was handled by the listener.
+     */
+    @Override
+    public boolean onQueryTextChange(String newText) {
+        if (TextUtils.isEmpty(newText)) {
+            query = null;
+        } else {
+            query = newText;
+        }
+        //TODO
+        getLoaderManager().restartLoader(SERVINGS_ID, null, this);
+        return true;
     }
 
     /**

@@ -8,5 +8,7 @@
     <string name="calories_per_day_title">Target calories per day</string>
     <string name="title_activity_settings">Settings</string>
     <string name="menu_settings">Settings</string>
+    <string name="search_hint">Food name</string>
+    <string name="menu_search">Search</string>
 
 </resources>

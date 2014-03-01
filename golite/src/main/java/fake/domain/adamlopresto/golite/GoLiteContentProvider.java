@@ -170,6 +170,7 @@ public class GoLiteContentProvider extends ContentProvider {
                 rowsUpdated = sqlDB.delete(HistoryTable.TABLE, selection, selectionArgs);
                 if (rowsUpdated > 0) {
                     helper.notifyChange(HISTORY_URI);
+                    helper.notifyChange(SERVING_URI);
                     helper.notifyChange(DAILY_TOTAL_URI);
                 }
                 return rowsUpdated;
@@ -198,6 +199,7 @@ public class GoLiteContentProvider extends ContentProvider {
                 break;
             case HISTORY:
                 id = sqlDB.insertOrThrow(HistoryTable.TABLE, null, values);
+                helper.notifyChange(SERVING_URI);
                 helper.notifyChange(DAILY_TOTAL_URI);
                 break;
             default:
@@ -240,6 +242,7 @@ public class GoLiteContentProvider extends ContentProvider {
                 rowsUpdated = sqlDB.update(HistoryTable.TABLE, values, selection, selectionArgs);
                 if (rowsUpdated > 0) {
                     helper.notifyChange(HISTORY_URI);
+                    helper.notifyChange(SERVING_URI);
                     helper.notifyChange(DAILY_TOTAL_URI);
                 }
                 return rowsUpdated;
