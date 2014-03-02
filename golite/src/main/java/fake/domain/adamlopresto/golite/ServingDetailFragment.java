@@ -1,18 +1,23 @@
 package fake.domain.adamlopresto.golite;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ListFragment;
 import android.app.LoaderManager;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.CursorLoader;
+import android.content.DialogInterface;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
@@ -69,19 +74,75 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Load the dummy content specified by the fragment
-        // arguments. In a real-world scenario, use a Loader
-        // to load content from a content provider.
         Bundle args = getArguments();
         if (args != null)
             food_id = args.getLong(ARG_ITEM_ID, -1L);
     }
 
     @Override
-    public void onAttach(@NotNull Activity activity) {
+    public void onAttach(@NotNull Activity activity){
         super.onAttach(activity);
         setListAdapter(adapter = new FoodServingAdapter(activity));
     }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        setHasOptionsMenu(true);
+
+        //TODO: Fix deletion and editing.
+        /*
+        ListView lv = getListView();
+        lv.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+        lv.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
+            int selected=0;
+            MenuItem editItem;
+
+            @Override
+            public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
+                if (checked)
+                    selected++;
+                else
+                    selected--;
+
+                editItem.setVisible(1 == selected);
+            }
+
+            @Override
+            public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+                getActivity().getMenuInflater().inflate(R.menu.cab_edit_delete, menu);
+                editItem = menu.findItem(R.id.edit);
+                return true;
+            }
+
+            @Override
+            public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+                return false;
+            }
+
+            @Override
+            public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+                return false;
+            }
+
+            @Override
+            public void onDestroyActionMode(ActionMode mode) {
+
+            }
+        });
+        lv.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                ListView lv = (ListView)parent;
+                lv.setItemChecked(position, lv.isItemChecked(position));
+                Toast.makeText(getActivity(), "Long clicked item", Toast.LENGTH_LONG).show();
+                return true;
+            }
+        });
+        */
+    }
+
 
     @Override
     public View onCreateView(@NotNull LayoutInflater inflater, ViewGroup container,
@@ -90,7 +151,6 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
         assert rootView != null;
         name = (EditText) rootView.findViewById(R.id.name);
         notes = (EditText) rootView.findViewById(R.id.notes);
-
 
         if (food_id != -1L) {
             LoaderManager manager = getLoaderManager();
@@ -126,6 +186,30 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
 
         if (activeHolder != null)
             activeHolder.updateAfterEdit();
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, @NotNull MenuInflater inflater) {
+        inflater.inflate(R.menu.serving_detail, menu);
+
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (R.id.menu_new == item.getItemId()){
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setView(getActivity().getLayoutInflater().inflate(R.layout.alert_serving_edit, null));
+            builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    //TODO
+                }
+            });
+            builder.setNegativeButton(android.R.string.cancel, null);
+            builder.show();
+            return true;
+        }
+        return false;
     }
 
     @Override
