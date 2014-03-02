@@ -21,6 +21,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
@@ -34,6 +35,7 @@ import java.text.NumberFormat;
 import fake.domain.adamlopresto.golite.db.DatabaseHelper;
 import fake.domain.adamlopresto.golite.db.FoodsTable;
 import fake.domain.adamlopresto.golite.db.HistoryTable;
+import fake.domain.adamlopresto.golite.db.ServingsTable;
 import fake.domain.adamlopresto.golite.db.ServingsView;
 
 /**
@@ -166,6 +168,13 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
     @Override
     public void onPause() {
         super.onPause();
+        saveData();
+
+        if (activeHolder != null)
+            activeHolder.updateAfterEdit();
+    }
+
+    private void saveData() {
         ContentValues values = new ContentValues(2);
         values.put(FoodsTable.COLUMN_NAME, name.getText().toString());
         values.put(FoodsTable.COLUMN_NOTES, notes.getText().toString());
@@ -181,11 +190,7 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
                         "Updated " + numChanged + " foods instead of exactly one. Report this as a bug.",
                         Toast.LENGTH_LONG).show();
             }
-
         }
-
-        if (activeHolder != null)
-            activeHolder.updateAfterEdit();
     }
 
     @Override
@@ -197,12 +202,27 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (R.id.menu_new == item.getItemId()){
+            saveData();
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setView(getActivity().getLayoutInflater().inflate(R.layout.alert_serving_edit, null));
+            View view = getActivity().getLayoutInflater().inflate(R.layout.alert_serving_edit, null);
+            final EditText number  = (EditText)view.findViewById(R.id.number);
+            final EditText units   = (EditText)view.findViewById(R.id.units);
+            final EditText cal     = (EditText)view.findViewById(R.id.calories);
+            final CheckBox visible = (CheckBox)view.findViewById(R.id.show_default);
+            builder.setView(view);
             builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    //TODO
+                    ContentValues values = new ContentValues(5);
+                    values.put(ServingsTable.COLUMN_FOOD, food_id);
+                    values.put(ServingsTable.COLUMN_NUMBER, number.getText().toString());
+                    values.put(ServingsTable.COLUMN_UNIT, units.getText().toString());
+                    values.put(ServingsTable.COLUMN_CAL, cal.getText().toString());
+                    values.put(ServingsTable.COLUMN_LISTED, visible.isChecked() ? 1 : 0);
+                    if (null == getActivity().getContentResolver()
+                            .insert(GoLiteContentProvider.SERVING_URI, values))
+                        Toast.makeText(getActivity(), "Failed to create serving", Toast.LENGTH_LONG)
+                                .show();
                 }
             });
             builder.setNegativeButton(android.R.string.cancel, null);

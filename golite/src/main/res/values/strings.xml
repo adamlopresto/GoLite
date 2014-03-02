@@ -16,5 +16,6 @@
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     <string name="new_serving">New serving</string>
+    <string name="new_food">New food</string>
 
 </resources>

@@ -6,6 +6,7 @@ import android.app.LoaderManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.CursorLoader;
+import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
@@ -243,7 +244,16 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        return super.onOptionsItemSelected(item);
+        switch (item.getItemId()){
+            case R.id.menu_new:
+                startActivity(new Intent(getActivity(), ServingDetailActivity.class));
+                return true;
+            case R.id.settings:
+                startActivity(new Intent(getActivity(), SettingsActivity.class));
+                return true;
+            default:
+                return false;
+        }
     }
 
     @Override
