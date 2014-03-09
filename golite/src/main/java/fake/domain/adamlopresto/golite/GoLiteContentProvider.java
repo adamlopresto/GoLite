@@ -15,6 +15,7 @@ import android.net.Uri;
 import fake.domain.adamlopresto.golite.db.DatabaseHelper;
 import fake.domain.adamlopresto.golite.db.FoodsTable;
 import fake.domain.adamlopresto.golite.db.HistoryTable;
+import fake.domain.adamlopresto.golite.db.HistoryView;
 import fake.domain.adamlopresto.golite.db.ServingsTable;
 import fake.domain.adamlopresto.golite.db.ServingsView;
 import fake.domain.adamlopresto.golite.db.TotalsView;
@@ -112,7 +113,7 @@ public class GoLiteContentProvider extends ContentProvider {
                 uri = SERVING_URI;
                 break;
             case HISTORY:
-                queryBuilder.setTables(HistoryTable.TABLE);
+                queryBuilder.setTables(HistoryView.VIEW);
                 uri = HISTORY_URI;
                 break;
             case DAILY_TOTAL:

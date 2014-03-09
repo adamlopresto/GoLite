@@ -1,6 +1,8 @@
 package fake.domain.adamlopresto.golite;
 
+import android.app.ActionBar;
 import android.app.Activity;
+import android.app.DatePickerDialog;
 import android.app.ListFragment;
 import android.app.LoaderManager;
 import android.content.ContentResolver;
@@ -24,7 +26,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
+import android.widget.DatePicker;
 import android.widget.ListView;
 import android.widget.ResourceCursorAdapter;
 import android.widget.SearchView;
@@ -35,10 +39,13 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.text.NumberFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 
 import fake.domain.adamlopresto.golite.db.DatabaseHelper;
 import fake.domain.adamlopresto.golite.db.HistoryTable;
+import fake.domain.adamlopresto.golite.db.HistoryView;
 import fake.domain.adamlopresto.golite.db.ServingsTable;
 import fake.domain.adamlopresto.golite.db.ServingsView;
 import fake.domain.adamlopresto.golite.db.TotalsView;
@@ -87,6 +94,7 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
     private static final NumberFormat NUMBER_FORMAT = NumberFormat.getNumberInstance();
 
     public static String activeDate = DatabaseHelper.DATE_FORMAT.format(new Date());
+    public static boolean showAll = true;
     /**
      * The current activated item position. Only used on tablets.
      */
@@ -116,6 +124,10 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
                     selection = ServingsView.COLUMN_NAME + " LIKE ?";
                     selectionArgs = new String[]{"%"+query+"%"};
                     uri = GoLiteContentProvider.SERVING_URI;
+                } else if (!showAll){
+                    uri = GoLiteContentProvider.HISTORY_URI;
+                    selection = HistoryView.COLUMN_DATE + "=?";
+                    selectionArgs = new String[]{activeDate};
                 }
 
                 return new CursorLoader(getActivity(), uri,
@@ -155,7 +167,7 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
                 int max = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(getActivity()).getString("calories_per_day_key", "1400"));
                 int left = max-totalNum;
                 if (left < 0){
-                    total.setText(String.format("%d/%d, over by $d", totalNum, max, -left));
+                    total.setText(String.format("%d/%d, over by %d", totalNum, max, -left));
                     total.setBackgroundColor(0xFFFF8888);
                 } else if (left == 0){
                     total.setText(String.format("%d/%d", totalNum, max));
@@ -282,7 +294,7 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
     }
 
     @Override
-    public void onAttach(final Activity activity) {
+    public void onAttach(@NotNull final Activity activity) {
         super.onAttach(activity);
 
         // Activities containing this fragment must implement its callbacks.
@@ -296,6 +308,55 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
         getLoaderManager().initLoader(SERVINGS_ID, null, this);
         getLoaderManager().initLoader(TOTALS_ID, null, this);
 
+        ActionBar actionBar = activity.getActionBar();
+        actionBar.setDisplayShowTitleEnabled(false);
+        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(actionBar.getThemedContext(),
+                android.R.layout.simple_list_item_1, android.R.id.text1, new String[]{
+                "All", "Today", "Yesterday", "Other date"
+        });
+
+        actionBar.setListNavigationCallbacks(adapter, new ActionBar.OnNavigationListener() {
+            @Override
+            public boolean onNavigationItemSelected(int itemPosition, long itemId) {
+                Calendar cal = new GregorianCalendar();
+                switch (itemPosition){
+                    case 0: //All
+                        activeDate = DatabaseHelper.DATE_FORMAT.format(cal.getTime());
+                        showAll = true;
+                        break;
+                    case 2: //Yesterday
+                        cal.add(GregorianCalendar.DAY_OF_MONTH, -1);
+                        // fall through
+                    case 1: //Today
+                        activeDate = DatabaseHelper.DATE_FORMAT.format(cal.getTime());
+                        showAll = false;
+                        break;
+                    case 3: //other date
+                        DatePickerDialog dlg = new DatePickerDialog(activity,
+                                new DatePickerDialog.OnDateSetListener() {
+                                    @Override
+                                    public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+                                        Calendar cal = new GregorianCalendar(year, monthOfYear, dayOfMonth);
+                                        activeDate = DatabaseHelper.DATE_FORMAT.format(cal.getTime());
+                                        showAll = false;
+                                        restartLoaders(true);
+                                    }
+                                }, cal.get(Calendar.YEAR),
+                                cal.get(Calendar.MONTH),
+                                cal.get(Calendar.DAY_OF_MONTH));
+                        dlg.show();
+                        return true;
+                    default:
+                        error("Unexpected dropdown item, position "+itemPosition+", id "+itemId);
+                        return false;
+                }
+                restartLoaders(true);
+                return true;
+            }
+        });
+
         mCallbacks = (Callbacks) activity;
     }
 
@@ -303,7 +364,16 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
     public void onResume() {
         super.onResume();
         query = null;
-        getLoaderManager().restartLoader(SERVINGS_ID, null, this);
+        restartLoaders(true);
+    }
+
+    private void restartLoaders(boolean both) {
+        LoaderManager lm = getLoaderManager();
+        if (lm != null) {
+            lm.restartLoader(SERVINGS_ID, null, this);
+            if (both)
+                lm.restartLoader(TOTALS_ID, null, this);
+        }
     }
 
     @Override
@@ -423,7 +493,7 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
             query = newText;
         }
         //TODO
-        getLoaderManager().restartLoader(SERVINGS_ID, null, this);
+        restartLoaders(false);
         return true;
     }
 
