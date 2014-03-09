@@ -92,57 +92,6 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
         super.onActivityCreated(savedInstanceState);
 
         setHasOptionsMenu(true);
-
-        //TODO: Fix deletion and editing.
-        /*
-        ListView lv = getListView();
-        lv.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
-        lv.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
-            int selected=0;
-            MenuItem editItem;
-
-            @Override
-            public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
-                if (checked)
-                    selected++;
-                else
-                    selected--;
-
-                editItem.setVisible(1 == selected);
-            }
-
-            @Override
-            public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-                getActivity().getMenuInflater().inflate(R.menu.cab_edit_delete, menu);
-                editItem = menu.findItem(R.id.edit);
-                return true;
-            }
-
-            @Override
-            public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-                return false;
-            }
-
-            @Override
-            public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-                return false;
-            }
-
-            @Override
-            public void onDestroyActionMode(ActionMode mode) {
-
-            }
-        });
-        lv.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                ListView lv = (ListView)parent;
-                lv.setItemChecked(position, lv.isItemChecked(position));
-                Toast.makeText(getActivity(), "Long clicked item", Toast.LENGTH_LONG).show();
-                return true;
-            }
-        });
-        */
     }
 
 

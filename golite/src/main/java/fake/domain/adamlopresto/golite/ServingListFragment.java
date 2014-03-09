@@ -3,6 +3,7 @@ package fake.domain.adamlopresto.golite;
 import android.app.Activity;
 import android.app.ListFragment;
 import android.app.LoaderManager;
+import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.CursorLoader;
@@ -13,12 +14,16 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
+import android.util.SparseBooleanArray;
+import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
+import android.widget.AdapterView;
 import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.ResourceCursorAdapter;
@@ -34,6 +39,7 @@ import java.util.Date;
 
 import fake.domain.adamlopresto.golite.db.DatabaseHelper;
 import fake.domain.adamlopresto.golite.db.HistoryTable;
+import fake.domain.adamlopresto.golite.db.ServingsTable;
 import fake.domain.adamlopresto.golite.db.ServingsView;
 import fake.domain.adamlopresto.golite.db.TotalsView;
 
@@ -103,14 +109,16 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
         switch (id) {
             case SERVINGS_ID:
 
+                Uri uri = GoLiteContentProvider.SERVING_LISTED_URI;
                 String selection = null;
                 String[] selectionArgs = null;
                 if (null != query){
                     selection = ServingsView.COLUMN_NAME + " LIKE ?";
                     selectionArgs = new String[]{"%"+query+"%"};
+                    uri = GoLiteContentProvider.SERVING_URI;
                 }
 
-                return new CursorLoader(getActivity(), GoLiteContentProvider.SERVING_LISTED_URI,
+                return new CursorLoader(getActivity(), uri,
                         new String[]{ServingsView.COLUMN_ID,
                                 ServingsView.COLUMN_NAME,
                                 ServingsView.COLUMN_NUMBER,
@@ -145,12 +153,17 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
 
                 assert getActivity() != null;
                 int max = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(getActivity()).getString("calories_per_day_key", "1400"));
-                total.setText(String.format("%d/%d", totalNum, max));
-                if (totalNum > max)
+                int left = max-totalNum;
+                if (left < 0){
+                    total.setText(String.format("%d/%d, over by $d", totalNum, max, -left));
                     total.setBackgroundColor(0xFFFF8888);
-                else
+                } else if (left == 0){
+                    total.setText(String.format("%d/%d", totalNum, max));
                     total.setBackgroundColor(0xFF88FF88);
-
+                } else {
+                    total.setText(String.format("%d/%d, %d left", totalNum, max, left));
+                    total.setBackgroundColor(0xFF88FF88);
+                }
                 break;
             default:
                 throw new AssertionError("Loader returned an invalid id");
@@ -171,30 +184,89 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
         }
     }
 
-    /**
-     * Called when the fragment's activity has been created and this
-     * fragment's view hierarchy instantiated.  It can be used to do final
-     * initialization once these pieces are in place, such as retrieving
-     * views or restoring state.  It is also useful for fragments that use
-     * {@link #setRetainInstance(boolean)} to retain their instance,
-     * as this callback tells the fragment when it is fully associated with
-     * the new activity instance.  This is called after {@link #onCreateView}
-     * and before {@link #onViewStateRestored(android.os.Bundle)}.
-     *
-     * @param savedInstanceState If the fragment is being re-created from
-     *                           a previous saved state, this is the state.
-     */
+    @Nullable
+    @Override
+    public View onCreateView(@NotNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_main_list, container);
+    }
+
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
         setHasOptionsMenu(true);
+        ListView lv = getListView();
+        lv.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+        lv.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
+            MenuItem editItem;
+
+            @Override
+            public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
+            }
+
+            @Override
+            public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+                getActivity().getMenuInflater().inflate(R.menu.cab_delete, menu);
+                editItem = menu.findItem(R.id.edit);
+
+                return true;
+            }
+
+            @Override
+            public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+                return false;
+            }
+
+            @Override
+            public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+                switch (item.getItemId()){
+                    case R.id.delete:
+                        SparseBooleanArray items = getListView().getCheckedItemPositions();
+                        assert items != null;
+                        int size = items.size();
+                        ListView listView = getListView();
+                        assert listView != null;
+
+                        Activity activity = getActivity();
+                        ContentResolver resolver = getActivity().getContentResolver();
+                        ContentValues cv = new ContentValues(1);
+                        cv.put(ServingsTable.COLUMN_LISTED, false);
+
+                        for (int i = 0 ; i < size; i++){
+                            //in theory, we shouldn't have false values. In theory.
+                            if (items.valueAt(i)){
+                                long serving_id = listView.getItemIdAtPosition(items.keyAt(i));
+                                resolver.update(GoLiteContentProvider.SERVING_URI, cv, "_id = ?",
+                                        DatabaseHelper.idToArgs(serving_id));
+                            }
+                        }
+                        mode.finish();
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+
+            @Override
+            public void onDestroyActionMode(ActionMode mode) {
+
+            }
+        });
+        lv.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                ListView lv = (ListView) parent;
+                lv.setItemChecked(position, lv.isItemChecked(position));
+                return true;
+            }
+        });
     }
 
-    @Nullable
-    @Override
-    public View onCreateView(@NotNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_main_list, container);
+    private void error(String msg){
+        Activity activity = getActivity();
+        if (activity != null)
+            Toast.makeText(getActivity(), msg, Toast.LENGTH_LONG).show();
+        new Throwable(msg).printStackTrace();
     }
 
     @Override
@@ -268,8 +340,10 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
     public void onListItemClick(ListView listView, View view, int position, long id) {
         super.onListItemClick(listView, view, position, id);
 
-        // Notify the active callbacks interface (the activity, if the
-        // fragment is attached to one) that an item has been selected.
+        editItem(position);
+    }
+
+    private void editItem(int position) {
         if (adapter != null) {
             Cursor cursor = adapter.getCursor();
             if (cursor != null && !cursor.isClosed()) {
@@ -281,6 +355,7 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
             }
         }
     }
+
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
