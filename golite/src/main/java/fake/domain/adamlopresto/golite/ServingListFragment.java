@@ -32,6 +32,7 @@ import android.widget.DatePicker;
 import android.widget.ListView;
 import android.widget.ResourceCursorAdapter;
 import android.widget.SearchView;
+import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -123,7 +124,7 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
                 if (null != query){
                     selection = ServingsView.COLUMN_NAME + " LIKE ?";
                     selectionArgs = new String[]{"%"+query+"%"};
-                    uri = GoLiteContentProvider.SERVING_URI;
+                    uri = Uri.withAppendedPath(GoLiteContentProvider.SERVING_DATED_HISTORY_URI, activeDate);
                 } else if (!showAll){
                     uri = GoLiteContentProvider.HISTORY_URI;
                     selection = HistoryView.COLUMN_DATE + "=?";
@@ -208,6 +209,10 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
 
         setHasOptionsMenu(true);
         ListView lv = getListView();
+        if (lv == null){
+            Utils.error(getActivity(), "Null list view");
+            return;
+        }
         lv.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
         lv.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
             MenuItem editItem;
@@ -218,7 +223,7 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
 
             @Override
             public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-                getActivity().getMenuInflater().inflate(R.menu.cab_delete, menu);
+                getContext().getMenuInflater().inflate(R.menu.cab_delete, menu);
                 editItem = menu.findItem(R.id.edit);
 
                 return true;
@@ -239,8 +244,7 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
                         ListView listView = getListView();
                         assert listView != null;
 
-                        Activity activity = getActivity();
-                        ContentResolver resolver = getActivity().getContentResolver();
+                        ContentResolver resolver = getContext().getContentResolver();
                         ContentValues cv = new ContentValues(1);
                         cv.put(ServingsTable.COLUMN_LISTED, false);
 
@@ -274,13 +278,6 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
         });
     }
 
-    private void error(String msg){
-        Activity activity = getActivity();
-        if (activity != null)
-            Toast.makeText(getActivity(), msg, Toast.LENGTH_LONG).show();
-        new Throwable(msg).printStackTrace();
-    }
-
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -308,11 +305,21 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
         getLoaderManager().initLoader(SERVINGS_ID, null, this);
         getLoaderManager().initLoader(TOTALS_ID, null, this);
 
+        mCallbacks = (Callbacks) activity;
+
         ActionBar actionBar = activity.getActionBar();
+        if (actionBar == null){
+            Utils.error(getContext(), "Null ActionBar");
+            return;
+        }
         actionBar.setDisplayShowTitleEnabled(false);
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(actionBar.getThemedContext(),
+        Context themedContext = actionBar.getThemedContext();
+        if (themedContext == null)
+            themedContext = activity;
+
+        SpinnerAdapter adapter = new ArrayAdapter<String>(themedContext,
                 android.R.layout.simple_list_item_1, android.R.id.text1, new String[]{
                 "All", "Today", "Yesterday", "Other date"
         });
@@ -349,7 +356,7 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
                         dlg.show();
                         return true;
                     default:
-                        error("Unexpected dropdown item, position "+itemPosition+", id "+itemId);
+                        Utils.error(activity, "Unexpected dropdown item, position "+itemPosition+", id "+itemId);
                         return false;
                 }
                 restartLoaders(true);
@@ -357,13 +364,13 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
             }
         });
 
-        mCallbacks = (Callbacks) activity;
     }
 
     @Override
     public void onResume() {
         super.onResume();
         query = null;
+        getContext().getContentResolver().delete(GoLiteContentProvider.DELETE_INVALID_URI, null, null);
         restartLoaders(true);
     }
 
@@ -376,12 +383,16 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
         }
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.main_menu, menu);
-        SearchView searchView = (SearchView)menu.findItem(R.id.search).getActionView();
-        assert searchView != null;
-        searchView.setOnQueryTextListener(this);
+        try {
+            inflater.inflate(R.menu.main_menu, menu);
+            SearchView searchView = (SearchView) menu.findItem(R.id.search).getActionView();
+            searchView.setOnQueryTextListener(this);
+        } catch (Exception e){
+            Utils.error(getContext(), e);
+        }
     }
 
     @Override
@@ -474,7 +485,8 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
      */
     @Override
     public boolean onQueryTextSubmit(String query) {
-        Toast.makeText(getActivity(), "Searching for: " + query + "...", Toast.LENGTH_SHORT).show();
+        Toast.makeText(getContext(), "Searching for: " + query + "...", Toast.LENGTH_SHORT).show();
+        this.query = query;
         return false;
     }
 
@@ -495,6 +507,21 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
         //TODO
         restartLoaders(false);
         return true;
+    }
+
+    /**
+     * Gets the current activity to use as a Context, or throws an exception.
+     * Guaranteed not to return null, to centralize error handling.
+     * @return Activity the Activity we're connected to, if any.
+     */
+    @NotNull
+    private Activity getContext(){
+        Activity context = getActivity();
+        if (context == null){
+            Utils.error(null, "Activity is unexpectedly null");
+            throw new AssertionError("Null context");
+        }
+        return context;
     }
 
     /**
@@ -532,7 +559,7 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
                 ContentValues cv = new ContentValues(3);
                 cv.put(HistoryTable.COLUMN_SERVING, serving_id);
                 cv.put(HistoryTable.COLUMN_QUANTITY, 1);
-                cv.put(HistoryTable.COLUMN_DATE, DatabaseHelper.DATE_FORMAT.format(new Date()));
+                cv.put(HistoryTable.COLUMN_DATE, activeDate);
                 //noinspection ConstantConditions
                 Uri newUri = v.getContext().getContentResolver().insert(GoLiteContentProvider.HISTORY_URI, cv);
                 assert newUri != null;

@@ -11,8 +11,10 @@ import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Loader;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteConstraintException;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -21,7 +23,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
-import android.widget.CheckBox;
+import android.widget.Checkable;
 import android.widget.EditText;
 import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
@@ -79,6 +81,9 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
         Bundle args = getArguments();
         if (args != null)
             food_id = args.getLong(ARG_ITEM_ID, -1L);
+        if (food_id == -1L && savedInstanceState != null)
+            food_id = savedInstanceState.getLong(ARG_ITEM_ID, -1L);
+
     }
 
     @Override
@@ -93,7 +98,6 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
 
         setHasOptionsMenu(true);
     }
-
 
     @Override
     public View onCreateView(@NotNull LayoutInflater inflater, ViewGroup container,
@@ -113,70 +117,123 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
         return rootView;
     }
 
-    @SuppressWarnings("ConstantConditions")
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putLong(ARG_ITEM_ID, food_id);
+    }
+
     @Override
     public void onPause() {
         super.onPause();
-        saveData();
+        updateOnly();
 
         if (activeHolder != null)
             activeHolder.updateAfterEdit();
     }
 
-    private void saveData() {
-        ContentValues values = new ContentValues(2);
-        values.put(FoodsTable.COLUMN_NAME, name.getText().toString());
-        values.put(FoodsTable.COLUMN_NOTES, notes.getText().toString());
-
+    @SuppressWarnings("ConstantConditions")
+    private boolean updateOrCreate() {
         if (food_id == -1L) {
-            Uri newItem = getActivity().getContentResolver().insert(GoLiteContentProvider.FOOD_URI, values);
-            food_id = Long.parseLong(newItem.getLastPathSegment());
-        } else {
-            int numChanged = getActivity().getContentResolver().update(GoLiteContentProvider.FOOD_URI, values,
-                    "_id = ?", DatabaseHelper.idToArgs(food_id));
-            if (numChanged != 1) {
-                Toast.makeText(getActivity(),
-                        "Updated " + numChanged + " foods instead of exactly one. Report this as a bug.",
-                        Toast.LENGTH_LONG).show();
+            ContentValues values = new ContentValues(2);
+            String nameStr = Utils.getText(name);
+            values.put(FoodsTable.COLUMN_NAME, nameStr);
+            values.put(FoodsTable.COLUMN_NOTES, Utils.getText(notes));
+            try {
+                if (TextUtils.isEmpty(nameStr)){
+                    Toast.makeText(getActivity(), "Can't create a food without a name", Toast.LENGTH_LONG).show();
+                    return false;
+                }
+                Uri newItem = getActivity().getContentResolver().insert(GoLiteContentProvider.FOOD_URI, values);
+                food_id = Long.parseLong(newItem.getLastPathSegment());
+                return true;
+            } catch (SQLiteConstraintException e) {
+                Toast.makeText(getActivity(), "Another food with that name already exists.", Toast.LENGTH_LONG).show();
+                return false;
+            } catch (Exception e){
+                Utils.error(getActivity(), e);
+                return false;
             }
+        } else {
+            return updateOnly();
         }
+    }
+
+    /**
+     * Saves updated data only if it already exists. Does nothing if the food doesn't exist yet.
+     */
+    @SuppressWarnings("ConstantConditions")
+    private boolean updateOnly() {
+        ContentValues values = new ContentValues(2);
+        String nameStr = Utils.getText(name);
+        values.put(FoodsTable.COLUMN_NAME, nameStr);
+        values.put(FoodsTable.COLUMN_NOTES, Utils.getText(notes));
+
+        try {
+            if (food_id == -1L) {
+                Context context = getActivity();
+                if (context != null) {
+                    Toast.makeText(context, "Food has no servings listed; not saving", Toast.LENGTH_LONG).show();
+                }
+            } else {
+                int numChanged = getActivity().getContentResolver().update(GoLiteContentProvider.FOOD_URI, values,
+                        "_id = ?", DatabaseHelper.idToArgs(food_id));
+                if (numChanged == 1)
+                    return true;
+                Utils.error(getActivity(), "Updated " + numChanged + " foods instead of exactly one.");
+            }
+        } catch (SQLiteConstraintException e) {
+            Toast.makeText(getActivity(), "Another food with that name already exists.", Toast.LENGTH_LONG).show();
+        } catch (Exception e){
+            Utils.error(getActivity(), e);
+        }
+        return false;
     }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, @NotNull MenuInflater inflater) {
         inflater.inflate(R.menu.serving_detail, menu);
-
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (R.id.menu_new == item.getItemId()){
-            saveData();
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            View view = getActivity().getLayoutInflater().inflate(R.layout.alert_serving_edit, null);
-            final EditText number  = (EditText)view.findViewById(R.id.number);
-            final EditText units   = (EditText)view.findViewById(R.id.units);
-            final EditText cal     = (EditText)view.findViewById(R.id.calories);
-            final CheckBox visible = (CheckBox)view.findViewById(R.id.show_default);
-            builder.setView(view);
-            builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    ContentValues values = new ContentValues(5);
-                    values.put(ServingsTable.COLUMN_FOOD, food_id);
-                    values.put(ServingsTable.COLUMN_NUMBER, number.getText().toString());
-                    values.put(ServingsTable.COLUMN_UNIT, units.getText().toString());
-                    values.put(ServingsTable.COLUMN_CAL, cal.getText().toString());
-                    values.put(ServingsTable.COLUMN_LISTED, visible.isChecked() ? 1 : 0);
-                    if (null == getActivity().getContentResolver()
-                            .insert(GoLiteContentProvider.SERVING_URI, values))
-                        Toast.makeText(getActivity(), "Failed to create serving", Toast.LENGTH_LONG)
-                                .show();
+            if (updateOrCreate()) {
+                final Context context = getActivity();
+                assert context != null;
+                AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                View view = getActivity().getLayoutInflater().inflate(R.layout.alert_serving_edit, null);
+                if (view == null) {
+                    Utils.error(context, "Could not instantiate dialog to create new serving");
+                    return true;
                 }
-            });
-            builder.setNegativeButton(android.R.string.cancel, null);
-            builder.show();
-            return true;
+                final EditText number = (EditText) view.findViewById(R.id.number);
+                final EditText units = (EditText) view.findViewById(R.id.units);
+                final EditText cal = (EditText) view.findViewById(R.id.calories);
+                final Checkable visible = (Checkable) view.findViewById(R.id.show_default);
+                builder.setView(view);
+                builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        ContentValues values = new ContentValues(5);
+                        values.put(ServingsTable.COLUMN_FOOD, food_id);
+                        values.put(ServingsTable.COLUMN_NUMBER, Utils.getText(number));
+                        values.put(ServingsTable.COLUMN_UNIT, Utils.getText(units));
+                        values.put(ServingsTable.COLUMN_CAL, Utils.getText(cal));
+                        values.put(ServingsTable.COLUMN_LISTED, visible.isChecked() ? 1 : 0);
+                        try {
+                            if (null == context.getContentResolver()
+                                    .insert(GoLiteContentProvider.SERVING_URI, values))
+                                Utils.error(context, "Failed to create serving");
+                        } catch (Throwable t) {
+                            Utils.error(context, t);
+                        }
+                    }
+                });
+                builder.setNegativeButton(android.R.string.cancel, null);
+                builder.show();
+                return true;
+            }
         }
         return false;
     }
@@ -191,7 +248,8 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
             );
         else
             return new CursorLoader(getActivity(),
-                    GoLiteContentProvider.SERVING_URI,
+                    Uri.withAppendedPath(GoLiteContentProvider.SERVING_DATED_HISTORY_URI,
+                            ServingListFragment.activeDate),
                     new String[]{ServingsView.COLUMN_ID, ServingsView.COLUMN_NUMBER,
                             ServingsView.COLUMN_UNIT, ServingsView.COLUMN_CAL,
                             ServingsView.COLUMN_QUANTITY, ServingsView.COLUMN_HISTORY_ID},
@@ -288,19 +346,24 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
                     values.put(HistoryTable.COLUMN_DATE, ServingListFragment.activeDate);
                     values.put(HistoryTable.COLUMN_SERVING, serving_id);
                     values.put(HistoryTable.COLUMN_QUANTITY, newQty);
-                    Uri newItem = resolver.insert(GoLiteContentProvider.HISTORY_URI, values);
-                    if (newItem == null) {
-                        Toast.makeText(ctx, "Could not create history item", Toast.LENGTH_SHORT).show();
-                    } else {
+                    try {
+                        Uri newItem = resolver.insert(GoLiteContentProvider.HISTORY_URI, values);
+                        //noinspection ConstantConditions
                         history_id = Long.parseLong(newItem.getLastPathSegment());
+                    } catch (Exception e){
+                        Utils.error(ctx, new Throwable("Could not create history item", e));
                     }
                 } else {
                     if (quantity != newQty) {
                         quantity = newQty;
                         ContentValues values = new ContentValues(1);
                         values.put(HistoryTable.COLUMN_QUANTITY, newQty);
-                        resolver.update(GoLiteContentProvider.HISTORY_URI, values,
-                                "_id = ?", DatabaseHelper.idToArgs(history_id));
+                        try {
+                            resolver.update(GoLiteContentProvider.HISTORY_URI, values,
+                                    "_id = ?", DatabaseHelper.idToArgs(history_id));
+                        } catch (Exception e){
+                            Utils.error(ctx, e);
+                        }
                     }
                 }
             }

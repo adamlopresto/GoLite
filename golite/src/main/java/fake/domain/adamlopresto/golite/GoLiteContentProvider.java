@@ -12,6 +12,9 @@ import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import fake.domain.adamlopresto.golite.db.DatabaseHelper;
 import fake.domain.adamlopresto.golite.db.FoodsTable;
 import fake.domain.adamlopresto.golite.db.HistoryTable;
@@ -33,7 +36,9 @@ public class GoLiteContentProvider extends ContentProvider {
     private static final int SERVINGS_LISTED = 4;
     private static final int HISTORY = 6;
     private static final int HISTORY_ID = 7;
-    private static final int DAILY_TOTAL = 8;
+    private static final int SERVINGS_DATED_HISTORY = 8;
+    private static final int DAILY_TOTAL = 10;
+    private static final int DELETE_INVALID = 12;
 
     private static final String AUTHORITY = "fake.domain.adamlopresto.golite";
 
@@ -54,8 +59,15 @@ public class GoLiteContentProvider extends ContentProvider {
     @SuppressWarnings("WeakerAccess")
     public static final Uri HISTORY_URI = Uri.withAppendedPath(BASE, HISTORY_BASE_PATH);
 
+    private static final String SERVING_DATED_HISTORY_PATH = SERVING_BASE_PATH+"/dated";
+    public static final Uri SERVING_DATED_HISTORY_URI = Uri.withAppendedPath(BASE, SERVING_DATED_HISTORY_PATH);
+
     private static final String DAILY_TOTAL_BASE_PATH = "daily_total";
     public static final Uri DAILY_TOTAL_URI = Uri.withAppendedPath(BASE, DAILY_TOTAL_BASE_PATH);
+
+    private static final String DELETE_INVALID_PATH = "delete_invalid";
+    public static final Uri DELETE_INVALID_URI = Uri.withAppendedPath(BASE, DELETE_INVALID_PATH);
+
     /*
 	public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE
 			+ "/GoShopItems";
@@ -74,7 +86,9 @@ public class GoLiteContentProvider extends ContentProvider {
         sURIMatcher.addURI(AUTHORITY, SERVING_LISTED_PATH, SERVINGS_LISTED);
         sURIMatcher.addURI(AUTHORITY, HISTORY_BASE_PATH, HISTORY);
         sURIMatcher.addURI(AUTHORITY, HISTORY_BASE_PATH + "/#", HISTORY_ID);
+        sURIMatcher.addURI(AUTHORITY, SERVING_DATED_HISTORY_PATH + "/*", SERVINGS_DATED_HISTORY);
         sURIMatcher.addURI(AUTHORITY, DAILY_TOTAL_BASE_PATH, DAILY_TOTAL);
+        sURIMatcher.addURI(AUTHORITY, DELETE_INVALID_PATH, DELETE_INVALID);
     }
 
     @Override
@@ -114,6 +128,25 @@ public class GoLiteContentProvider extends ContentProvider {
                 break;
             case HISTORY:
                 queryBuilder.setTables(HistoryView.VIEW);
+                uri = HISTORY_URI;
+                break;
+            case SERVINGS_DATED_HISTORY:
+                String date = uri.getLastPathSegment();
+                Map<String, String> map = new HashMap<>(10);
+                map.put(ServingsView.COLUMN_ID, "servings._id");
+                map.put(ServingsView.COLUMN_FOOD, ServingsView.COLUMN_FOOD);
+                map.put(ServingsView.COLUMN_NAME, ServingsView.COLUMN_NAME);
+                map.put(ServingsView.COLUMN_FOOD_NOTES, ServingsView.COLUMN_FOOD_NOTES);
+                map.put(ServingsView.COLUMN_NUMBER, ServingsView.COLUMN_NUMBER);
+                map.put(ServingsView.COLUMN_UNIT, ServingsView.COLUMN_UNIT);
+                map.put(ServingsView.COLUMN_CAL, ServingsView.COLUMN_CAL);
+                map.put(ServingsView.COLUMN_LISTED, ServingsView.COLUMN_LISTED);
+                map.put(ServingsView.COLUMN_QUANTITY, ServingsView.COLUMN_QUANTITY);
+                map.put("history_id", "history._id");
+                queryBuilder.setProjectionMap(map);
+                queryBuilder.setTables("foods INNER JOIN servings ON foods._id=servings.food " +
+                        "LEFT OUTER JOIN history ON servings._id=history.serving " +
+                        "AND history.date="+DatabaseUtils.sqlEscapeString(date));
                 uri = HISTORY_URI;
                 break;
             case DAILY_TOTAL:
@@ -172,6 +205,17 @@ public class GoLiteContentProvider extends ContentProvider {
                 if (rowsUpdated > 0) {
                     helper.notifyChange(HISTORY_URI);
                     helper.notifyChange(SERVING_URI);
+                    helper.notifyChange(DAILY_TOTAL_URI);
+                }
+                return rowsUpdated;
+            case DELETE_INVALID:
+                rowsUpdated = sqlDB.delete(FoodsTable.TABLE,
+                        "NOT EXISTS (SELECT servings._id FROM servings WHERE servings.food = foods._id)",
+                        null);
+                if (rowsUpdated > 0) {
+                    helper.notifyChange(FOOD_URI);
+                    helper.notifyChange(SERVING_URI);
+                    helper.notifyChange(HISTORY_URI);
                     helper.notifyChange(DAILY_TOTAL_URI);
                 }
                 return rowsUpdated;
