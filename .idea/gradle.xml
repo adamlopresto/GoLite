@@ -7,8 +7,8 @@
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="modules">
           <set>
-            <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/golite" />
+            <option value="C:\Users\adam\AndroidStudioProjects\GoLite" />
+            <option value="C:\Users\adam\AndroidStudioProjects\GoLite\golite" />
           </set>
         </option>
       </GradleProjectSettings>
