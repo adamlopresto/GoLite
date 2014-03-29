@@ -1,5 +1,6 @@
 package fake.domain.adamlopresto.golite;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ListFragment;
@@ -25,6 +26,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Checkable;
 import android.widget.EditText;
+import android.widget.PopupMenu;
 import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -201,41 +203,60 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
             if (updateOrCreate()) {
                 final Context context = getActivity();
                 assert context != null;
-                AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                View view = getActivity().getLayoutInflater().inflate(R.layout.alert_serving_edit, null);
-                if (view == null) {
-                    Utils.error(context, "Could not instantiate dialog to create new serving");
-                    return true;
-                }
-                final EditText number = (EditText) view.findViewById(R.id.number);
-                final EditText units = (EditText) view.findViewById(R.id.units);
-                final EditText cal = (EditText) view.findViewById(R.id.calories);
-                final Checkable visible = (Checkable) view.findViewById(R.id.show_default);
-                builder.setView(view);
-                builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        ContentValues values = new ContentValues(5);
-                        values.put(ServingsTable.COLUMN_FOOD, food_id);
-                        values.put(ServingsTable.COLUMN_NUMBER, Utils.getText(number));
-                        values.put(ServingsTable.COLUMN_UNIT, Utils.getText(units));
-                        values.put(ServingsTable.COLUMN_CAL, Utils.getText(cal));
-                        values.put(ServingsTable.COLUMN_LISTED, visible.isChecked() ? 1 : 0);
-                        try {
-                            if (null == context.getContentResolver()
-                                    .insert(GoLiteContentProvider.SERVING_URI, values))
-                                Utils.error(context, "Failed to create serving");
-                        } catch (Throwable t) {
-                            Utils.error(context, t);
-                        }
-                    }
-                });
-                builder.setNegativeButton(android.R.string.cancel, null);
-                builder.show();
+                showEditDialog(context, "1", "serving", "", food_id, -1L);
                 return true;
             }
         }
         return false;
+    }
+
+    private static void showEditDialog(final Context context, CharSequence num, CharSequence unitsStr,
+                                       CharSequence calories, final long food_id, final long id) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        @SuppressWarnings("ConstantConditions") @SuppressLint("InflateParams") View view =
+                LayoutInflater.from(context).inflate(R.layout.alert_serving_edit, null);
+        if (view == null) {
+            Utils.error(context, "Could not instantiate dialog to create new serving");
+            return;
+        }
+        final EditText number = (EditText) view.findViewById(R.id.number);
+        final EditText units = (EditText) view.findViewById(R.id.units);
+        final EditText cal = (EditText) view.findViewById(R.id.calories);
+        number.setText(num);
+        units.setText(unitsStr);
+        cal.setText(calories);
+        final Checkable visible = (Checkable) view.findViewById(R.id.show_default);
+        builder.setView(view);
+        builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                ContentValues values = new ContentValues(5);
+                values.put(ServingsTable.COLUMN_FOOD, food_id);
+                values.put(ServingsTable.COLUMN_NUMBER, Utils.getText(number));
+                values.put(ServingsTable.COLUMN_UNIT, Utils.getText(units));
+                values.put(ServingsTable.COLUMN_CAL, Utils.getText(cal));
+                values.put(ServingsTable.COLUMN_LISTED, visible.isChecked() ? 1 : 0);
+                try {
+                    if (-1L == id) {
+                        if (null == context.getContentResolver()
+                                .insert(GoLiteContentProvider.SERVING_URI, values)) {
+                            Utils.error(context, "Failed to create serving");
+                        }
+                    } else {
+                        if (1 != context.getContentResolver()
+                                .update(GoLiteContentProvider.SERVING_URI, values,
+                                        "_id = ?", DatabaseHelper.idToArgs(id)
+                                )) {
+                            Utils.error(context, "Failed to update serving");
+                        }
+                    }
+                } catch (Throwable t) {
+                    Utils.error(context, t);
+                }
+            }
+        });
+        builder.setNegativeButton(android.R.string.cancel, null);
+        builder.show();
     }
 
     @Override
@@ -252,7 +273,8 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
                             ServingListFragment.activeDate),
                     new String[]{ServingsView.COLUMN_ID, ServingsView.COLUMN_NUMBER,
                             ServingsView.COLUMN_UNIT, ServingsView.COLUMN_CAL,
-                            ServingsView.COLUMN_QUANTITY, ServingsView.COLUMN_HISTORY_ID},
+                            ServingsView.COLUMN_QUANTITY, ServingsView.COLUMN_HISTORY_ID,
+                            ServingsView.COLUMN_FOOD},
                     ServingsView.COLUMN_FOOD + "=?", DatabaseHelper.idToArgs(food_id),
                     ServingsView.COLUMN_LISTED + " DESC");
     }
@@ -274,7 +296,7 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
 
     }
 
-    private static class ViewHolder {
+    private static class ViewHolder implements View.OnClickListener, PopupMenu.OnMenuItemClickListener {
         EditText quantityView;
         TextView numberView;
         TextView unitsView;
@@ -288,6 +310,7 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
 
         long history_id = -1L;
         long serving_id = -1L;
+        long food_id = -1L;
 
         void extractFrom(@NotNull Cursor cursor) {
             serving_id = cursor.getLong(0);
@@ -308,6 +331,7 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
                 totalView.setText(NUMBER_FORMAT.format(total));
                 totalLabel.setVisibility(View.VISIBLE);
             }
+            food_id = cursor.getLong(6);
         }
 
         void updateAfterEdit() {
@@ -368,6 +392,43 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
                 }
             }
         }
+
+        @Override
+        public void onClick(View v) {
+            //noinspection ConstantConditions
+            PopupMenu popup = new PopupMenu(v.getContext(), v);
+            popup.inflate(R.menu.cab_edit_delete);
+            popup.setOnMenuItemClickListener(this);
+            popup.show();
+        }
+
+        @Override
+        public boolean onMenuItemClick(MenuItem item) {
+            switch (item.getItemId()){
+                case R.id.edit:
+                    showEditDialog(quantityView.getContext(), numberView.getText(),
+                            unitsView.getText(), NUMBER_FORMAT.format(calories), food_id, serving_id);
+                    return true;
+                case R.id.delete:
+                    //TODO
+                    AlertDialog.Builder builder = new AlertDialog.Builder(quantityView.getContext());
+                    builder.setMessage("Are you sure you want to delete this serving? " +
+                            "All history associated with it will be deleted. " +
+                            "This cannot be undone.");
+                    builder.setNegativeButton(android.R.string.cancel, null);
+                    builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            quantityView.getContext().getContentResolver().delete(
+                                    GoLiteContentProvider.SERVING_URI, ServingsView.COLUMN_ID+"=?",
+                                    DatabaseHelper.idToArgs(serving_id));
+                        }
+                    });
+                    builder.show();
+                    return true;
+            }
+            return false;
+        }
     }
 
     private class FoodServingAdapter extends ResourceCursorAdapter {
@@ -402,6 +463,7 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
             holder.totalView = (TextView) view.findViewById(R.id.total);
             holder.totalLabel = (TextView) view.findViewById(R.id.total_label);
 
+            view.findViewById(R.id.overflow).setOnClickListener(holder);
 
             holder.quantityView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
                 @Override

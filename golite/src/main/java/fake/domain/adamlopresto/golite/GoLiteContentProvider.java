@@ -241,6 +241,7 @@ public class GoLiteContentProvider extends ContentProvider {
                 break;
             case SERVINGS:
                 id = sqlDB.insertOrThrow(ServingsTable.TABLE, null, values);
+                helper.notifyChange(HISTORY_URI);
                 break;
             case HISTORY:
                 id = sqlDB.insertOrThrow(HistoryTable.TABLE, null, values);
