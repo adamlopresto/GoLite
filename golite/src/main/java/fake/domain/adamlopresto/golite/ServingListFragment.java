@@ -319,7 +319,7 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
         if (themedContext == null)
             themedContext = activity;
 
-        SpinnerAdapter adapter = new ArrayAdapter<String>(themedContext,
+        SpinnerAdapter adapter = new ArrayAdapter<>(themedContext,
                 android.R.layout.simple_list_item_1, android.R.id.text1, new String[]{
                 "All", "Today", "Yesterday", "Other date"
         });

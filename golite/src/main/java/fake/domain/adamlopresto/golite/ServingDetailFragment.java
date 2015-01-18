@@ -37,9 +37,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.text.NumberFormat;
-import java.util.AbstractSet;
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 
 import fake.domain.adamlopresto.golite.db.DatabaseHelper;
 import fake.domain.adamlopresto.golite.db.FoodsTable;
@@ -72,7 +71,7 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
 
     private static final NumberFormat NUMBER_FORMAT = NumberFormat.getNumberInstance();
 
-    private AbstractSet<ViewHolder> activeHolders = new HashSet<>();
+    private Collection<ViewHolder> activeHolders = new HashSet<>();
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
