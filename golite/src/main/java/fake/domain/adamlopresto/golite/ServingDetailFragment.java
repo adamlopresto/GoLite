@@ -15,7 +15,9 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteConstraintException;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -35,6 +37,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.text.NumberFormat;
+import java.util.AbstractSet;
+import java.util.HashSet;
+import java.util.Iterator;
 
 import fake.domain.adamlopresto.golite.db.DatabaseHelper;
 import fake.domain.adamlopresto.golite.db.FoodsTable;
@@ -67,7 +72,7 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
 
     private static final NumberFormat NUMBER_FORMAT = NumberFormat.getNumberInstance();
 
-    private ViewHolder activeHolder;
+    private AbstractSet<ViewHolder> activeHolders = new HashSet<>();
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -130,8 +135,14 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
         super.onPause();
         updateOnly();
 
-        if (activeHolder != null)
-            activeHolder.updateAfterEdit();
+        if (!activeHolders.isEmpty()){
+            Iterator<ViewHolder> holders= activeHolders.iterator();
+            while (holders.hasNext()){
+                ViewHolder holder = holders.next();
+                holder.updateAfterEdit();
+            }
+            activeHolders.clear();
+        }
     }
 
     @SuppressWarnings("ConstantConditions")
@@ -474,6 +485,7 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
                 }
             });
 
+            /*
             holder.quantityView.setOnFocusChangeListener(new View.OnFocusChangeListener() {
                 @Override
                 public void onFocusChange(View v, boolean hasFocus) {
@@ -483,6 +495,23 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
                         holder.updateAfterEdit();
                         activeHolder = null;
                     }
+                }
+            });
+            */
+            holder.quantityView.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+                    activeHolders.add(holder);
                 }
             });
 
