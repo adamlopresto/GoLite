@@ -136,9 +136,7 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
         updateOnly();
 
         if (!activeHolders.isEmpty()){
-            Iterator<ViewHolder> holders= activeHolders.iterator();
-            while (holders.hasNext()){
-                ViewHolder holder = holders.next();
+            for (ViewHolder holder : activeHolders) {
                 holder.updateAfterEdit();
             }
             activeHolders.clear();
