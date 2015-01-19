@@ -404,6 +404,9 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
             case R.id.settings:
                 startActivity(new Intent(getActivity(), SettingsActivity.class));
                 return true;
+            case R.id.weekly_review:
+                startActivity(new Intent(getActivity(), WeeklyReviewActivity.class));
+                return true;
             default:
                 return false;
         }

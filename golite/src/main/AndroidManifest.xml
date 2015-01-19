@@ -12,7 +12,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name="fake.domain.adamlopresto.golite.ServingListActivity"
+            android:name=".ServingListActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -28,9 +28,9 @@
                 android:resource="@xml/searchable" />
         </activity>
         <activity
-            android:name="fake.domain.adamlopresto.golite.ServingDetailActivity"
+            android:name=".ServingDetailActivity"
             android:label="@string/title_serving_detail"
-            android:parentActivityName="fake.domain.adamlopresto.golite.ServingListActivity"
+            android:parentActivityName=".ServingListActivity"
             android:windowSoftInputMode="stateHidden" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -38,15 +38,23 @@
         </activity>
 
         <provider
-            android:name="fake.domain.adamlopresto.golite.GoLiteContentProvider"
+            android:name=".GoLiteContentProvider"
             android:authorities="fake.domain.adamlopresto.golite"
             android:enabled="true"
             android:exported="false" >
         </provider>
 
         <activity
-            android:name="fake.domain.adamlopresto.golite.SettingsActivity"
+            android:name=".SettingsActivity"
             android:label="@string/title_activity_settings" >
+        </activity>
+        <activity
+            android:name=".WeeklyReviewActivity"
+            android:label="@string/title_activity_weekly_review"
+            android:parentActivityName=".ServingListActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="fake.domain.adamlopresto.golite.ServingListActivity" />
         </activity>
     </application>
 

@@ -19,4 +19,8 @@
         android:title="@string/menu_settings"
         android:showAsAction="never"
         />
+    <item
+        android:id="@+id/weekly_review"
+        android:title="Review week"
+        />
 </menu>

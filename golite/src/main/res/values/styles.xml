@@ -7,5 +7,14 @@
     <style name="activatedBackgroundIndicator" parent="AppTheme">
         <item name="android:background">?android:attr/activatedBackgroundIndicator</item>
     </style>
+    <style name="weeklyReviewBody">
+        <item name="android:textSize">22sp</item>
+        <item name="android:paddingLeft">4pt</item>
+        <item name="android:paddingRight">4pt</item>
+    </style>
+    <style name="weeklyReviewHeader" parent="weeklyReviewBody">
+        <item name="android:textStyle">bold</item>
+    </style>
+
 
 </resources>

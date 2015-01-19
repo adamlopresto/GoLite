@@ -18,5 +18,6 @@
     <string name="new_serving">New serving</string>
     <string name="new_food">New food</string>
     <string name="overflow_content_description">Menu</string>
+    <string name="title_activity_weekly_review">Weekly Review</string>
 
 </resources>
