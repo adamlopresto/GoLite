@@ -62,6 +62,9 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
     public static final String ARG_ITEM_ID = "item_id";
     public static final String ARG_FOOD_NAME = "food_name";
 
+    private static final int FOOD_LOADER = 0;
+    private static final int SERVINGS_LOADER = 1;
+
     private long food_id = -1L;
     @NotNull
     private EditText name;
@@ -121,13 +124,14 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
                 if (!TextUtils.isEmpty(foodName)) {
                     foodName = Character.toUpperCase(foodName.charAt(0)) + foodName.substring(1);
                     name.setText(foodName);
+                    createNewServing();
                 }
             }
         } else {
             LoaderManager manager = getLoaderManager();
             assert manager != null;
-            manager.initLoader(0, null, this);
-            manager.initLoader(1, null, this);
+            manager.initLoader(FOOD_LOADER, null, this);
+            manager.initLoader(SERVINGS_LOADER, null, this);
         }
 
         return rootView;
@@ -218,14 +222,22 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (R.id.menu_new == item.getItemId()){
-            if (updateOrCreate()) {
-                final Context context = getActivity();
-                assert context != null;
-                showEditDialog(context, "1", "serving", "", food_id, -1L);
-                return true;
-            }
+            return createNewServing();
         }
         return false;
+    }
+
+    private boolean createNewServing() {
+        if (updateOrCreate()) {
+            final Context context = getActivity();
+            assert context != null;
+            showEditDialog(context, "1", "serving", "", food_id, -1L);
+            getLoaderManager().restartLoader(SERVINGS_LOADER, null, this);
+            return true;
+        } else {
+            Toast.makeText(getActivity(), "Set a food name first", Toast.LENGTH_LONG).show();
+            return false;
+        }
     }
 
     private static void showEditDialog(final Context context, CharSequence num, CharSequence unitsStr,
@@ -279,13 +291,13 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        if (id == 0)
+        if (id == FOOD_LOADER)
             return new CursorLoader(getActivity(),
                     GoLiteContentProvider.FOOD_URI,
                     new String[]{FoodsTable.COLUMN_NAME, FoodsTable.COLUMN_NOTES},
                     FoodsTable.COLUMN_ID + "=?", new String[]{String.valueOf(food_id)}, null
             );
-        else
+        else //id == SERVINGS_LOADER
             return new CursorLoader(getActivity(),
                     Uri.withAppendedPath(GoLiteContentProvider.SERVING_DATED_HISTORY_URI,
                             ServingListFragment.activeDate),
@@ -299,12 +311,12 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-        if (loader.getId() == 0) {
+        if (loader.getId() == FOOD_LOADER) {
             if (cursor != null && !cursor.isClosed() && cursor.moveToFirst()) {
                 name.setText(cursor.getString(0));
                 notes.setText(cursor.getString(1));
             }
-        } else {
+        } else { //SERVINGS_LOADER
             adapter.swapCursor(cursor);
         }
     }
