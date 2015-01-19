@@ -60,6 +60,7 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
      * represents.
      */
     public static final String ARG_ITEM_ID = "item_id";
+    public static final String ARG_FOOD_NAME = "food_name";
 
     private long food_id = -1L;
     @NotNull
@@ -113,7 +114,16 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
         name = (EditText) rootView.findViewById(R.id.name);
         notes = (EditText) rootView.findViewById(R.id.notes);
 
-        if (food_id != -1L) {
+        if (food_id == -1L) {
+            Bundle arguments = getArguments();
+            if (arguments != null) {
+                String foodName = arguments.getString(ARG_FOOD_NAME);
+                if (!TextUtils.isEmpty(foodName)) {
+                    foodName = Character.toUpperCase(foodName.charAt(0)) + foodName.substring(1);
+                    name.setText(foodName);
+                }
+            }
+        } else {
             LoaderManager manager = getLoaderManager();
             assert manager != null;
             manager.initLoader(0, null, this);

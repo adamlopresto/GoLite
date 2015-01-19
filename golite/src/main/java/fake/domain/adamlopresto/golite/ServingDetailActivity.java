@@ -2,6 +2,7 @@ package fake.domain.adamlopresto.golite;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.MenuItem;
 
 /**
@@ -40,6 +41,11 @@ public class ServingDetailActivity extends Activity {
             Bundle arguments = new Bundle();
             arguments.putLong(ServingDetailFragment.ARG_ITEM_ID,
                     getIntent().getLongExtra(ServingDetailFragment.ARG_ITEM_ID, -1L));
+
+            String newItemName = getIntent().getStringExtra(ServingDetailFragment.ARG_FOOD_NAME);
+            if (!TextUtils.isEmpty(newItemName))
+                arguments.putString(ServingDetailFragment.ARG_FOOD_NAME, newItemName);
+
             ServingDetailFragment fragment = new ServingDetailFragment();
             fragment.setArguments(arguments);
             getFragmentManager().beginTransaction()

@@ -398,9 +398,13 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
-            case R.id.menu_new:
-                startActivity(new Intent(getActivity(), ServingDetailActivity.class));
+            case R.id.menu_new: {
+                Intent intent = new Intent(getActivity(), ServingDetailActivity.class);
+                if (!TextUtils.isEmpty(query))
+                    intent.putExtra(ServingDetailFragment.ARG_FOOD_NAME, query);
+                startActivity(intent);
                 return true;
+            }
             case R.id.settings:
                 startActivity(new Intent(getActivity(), SettingsActivity.class));
                 return true;
