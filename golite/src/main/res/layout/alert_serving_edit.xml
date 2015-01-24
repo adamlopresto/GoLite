@@ -42,7 +42,7 @@
         android:layout_width="0dp"
         android:layout_gravity="fill_horizontal"
         android:id="@+id/calories"
-        android:inputType="numberDecimal">
+        android:inputType="numberSigned|numberDecimal">
         <requestFocus />
     </EditText>
 
