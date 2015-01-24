@@ -73,6 +73,7 @@ public class WeeklyReviewActivity extends Activity {
                                  Bundle savedInstanceState) {
             TableLayout rootView = (TableLayout) inflater.inflate(R.layout.fragment_weekly_review, container, false);
             Calendar calendar = GregorianCalendar.getInstance();
+            String today = DatabaseHelper.DATE_FORMAT.format(calendar.getTime());
             int day = calendar.get(Calendar.DAY_OF_WEEK);
             int offset;
             switch(day) {
@@ -99,12 +100,17 @@ public class WeeklyReviewActivity extends Activity {
             DateFormat dayOfWeekFormat = new SimpleDateFormat("EEEE");
             while (!cursor.isAfterLast()){
                 String dateAsString = cursor.getString(0);
+                if (today.equals(dateAsString)){
+                    inflater.inflate(R.layout.weekly_review_divider, rootView, true);
+                    addRow(rootView, inflater, "Subtotal", total, totalDiff);
+                }
                 try {
 
                     Date date = DatabaseHelper.DATE_FORMAT.parse(dateAsString);
                     dateAsString = dayOfWeekFormat.format(date);
                 } catch(Exception ignored){
                 }
+
 
                 int calories = cursor.getInt(1);
                 total += calories;
