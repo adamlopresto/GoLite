@@ -36,6 +36,8 @@ import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.zxing.integration.android.IntentIntegrator;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -410,6 +412,10 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
                 return true;
             case R.id.weekly_review:
                 startActivity(new Intent(getActivity(), WeeklyReviewActivity.class));
+                return true;
+            case R.id.menu_scan:
+                IntentIntegrator integrator = new IntentIntegrator(getActivity());
+                integrator.initiateScan();
                 return true;
             default:
                 return false;

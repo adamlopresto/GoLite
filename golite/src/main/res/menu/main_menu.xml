@@ -15,6 +15,12 @@
         android:showAsAction="always"
         />
     <item
+        android:id="@+id/menu_scan"
+        android:title="Scan"
+        android:showAsAction="ifRoom"
+        android:visible="false"
+        />
+    <item
         android:id="@+id/settings"
         android:title="@string/menu_settings"
         android:showAsAction="never"

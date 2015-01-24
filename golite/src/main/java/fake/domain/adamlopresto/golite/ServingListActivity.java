@@ -3,6 +3,10 @@ package fake.domain.adamlopresto.golite;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.Toast;
+
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
 
 
 /**
@@ -75,6 +79,13 @@ public class ServingListActivity extends Activity
             Intent detailIntent = new Intent(this, ServingDetailActivity.class);
             detailIntent.putExtra(ServingDetailFragment.ARG_ITEM_ID, id);
             startActivity(detailIntent);
+        }
+    }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
+        if (scanResult != null) {
+            Toast.makeText(this, scanResult.getContents(), Toast.LENGTH_LONG).show();
         }
     }
 }
