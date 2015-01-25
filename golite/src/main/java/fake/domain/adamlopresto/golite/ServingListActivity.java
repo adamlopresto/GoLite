@@ -2,11 +2,16 @@ package fake.domain.adamlopresto.golite;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.widget.Toast;
 
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
+
+import fake.domain.adamlopresto.golite.db.BarcodesTable;
+import fake.domain.adamlopresto.golite.db.DatabaseHelper;
 
 
 /**
@@ -85,7 +90,20 @@ public class ServingListActivity extends Activity
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
         IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
         if (scanResult != null) {
-            Toast.makeText(this, scanResult.getContents(), Toast.LENGTH_LONG).show();
+            SQLiteDatabase db = DatabaseHelper.getInstance(this).getReadableDatabase();
+            Cursor cursor = db.query(BarcodesTable.TABLE, new String[]{BarcodesTable.COLUMN_FOOD},
+                    BarcodesTable.COLUMN_BARCODE + "=?", new String[]{scanResult.getContents()},
+                    null, null, null);
+            if (!cursor.isAfterLast()){
+                cursor.moveToFirst();
+                long food_id = cursor.getLong(0);
+                Intent detailIntent = new Intent(this, ServingDetailActivity.class);
+                detailIntent.putExtra(ServingDetailFragment.ARG_ITEM_ID, food_id);
+                startActivity(detailIntent);
+
+            } else {
+                Toast.makeText(this, "No food found with barcode "+scanResult.getContents(), Toast.LENGTH_LONG).show();
+            }
         }
     }
 }

@@ -13,6 +13,7 @@ import android.content.DialogInterface;
 import android.content.Loader;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteConstraintException;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
@@ -33,6 +34,8 @@ import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.zxing.integration.android.IntentIntegrator;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -40,6 +43,7 @@ import java.text.NumberFormat;
 import java.util.Collection;
 import java.util.HashSet;
 
+import fake.domain.adamlopresto.golite.db.BarcodesTable;
 import fake.domain.adamlopresto.golite.db.DatabaseHelper;
 import fake.domain.adamlopresto.golite.db.FoodsTable;
 import fake.domain.adamlopresto.golite.db.HistoryTable;
@@ -221,9 +225,15 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (R.id.menu_new == item.getItemId()){
-            return createNewServing();
+        switch (item.getItemId()){
+            case R.id.menu_new:
+                return createNewServing();
+            case R.id.menu_scan:
+                IntentIntegrator integrator = new IntentIntegrator(getActivity());
+                integrator.initiateScan();
+                return true;
         }
+
         return false;
     }
 
@@ -324,6 +334,15 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
 
+    }
+
+    public void addBarcode(String barcode) {
+        DatabaseHelper helper = DatabaseHelper.getInstance(getActivity());
+        SQLiteDatabase db = helper.getWritableDatabase();
+        ContentValues values = new ContentValues(2);
+        values.put(BarcodesTable.COLUMN_FOOD, food_id);
+        values.put(BarcodesTable.COLUMN_BARCODE, barcode);
+        db.insert(BarcodesTable.TABLE, null, values);
     }
 
     private static class ViewHolder implements View.OnClickListener, PopupMenu.OnMenuItemClickListener {

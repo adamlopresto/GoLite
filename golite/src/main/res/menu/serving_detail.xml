@@ -7,5 +7,10 @@
         android:icon="@drawable/ic_action_new"
         android:showAsAction="always"
         />
+    <item
+        android:id="@+id/menu_scan"
+        android:title="Scan"
+        android:showAsAction="ifRoom"
+        />
 
 </menu>

@@ -1,9 +1,14 @@
 package fake.domain.adamlopresto.golite;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.MenuItem;
+import android.widget.Toast;
+
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
 
 /**
  * An activity representing a single Serving detail screen. This
@@ -16,6 +21,8 @@ import android.view.MenuItem;
  */
 @SuppressWarnings("WeakerAccess")
 public class ServingDetailActivity extends Activity {
+
+    private ServingDetailFragment fragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,7 +53,7 @@ public class ServingDetailActivity extends Activity {
             if (!TextUtils.isEmpty(newItemName))
                 arguments.putString(ServingDetailFragment.ARG_FOOD_NAME, newItemName);
 
-            ServingDetailFragment fragment = new ServingDetailFragment();
+            fragment = new ServingDetailFragment();
             fragment.setArguments(arguments);
             getFragmentManager().beginTransaction()
                     .add(R.id.serving_detail_container, fragment)
@@ -69,5 +76,12 @@ public class ServingDetailActivity extends Activity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
+        if (scanResult != null) {
+            fragment.addBarcode(scanResult.getContents());
+        }
     }
 }
