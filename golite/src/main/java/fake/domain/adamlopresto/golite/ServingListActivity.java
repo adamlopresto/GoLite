@@ -3,12 +3,10 @@ package fake.domain.adamlopresto.golite;
 import android.app.Activity;
 import android.content.Intent;
 import android.database.Cursor;
-import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.widget.Toast;
 
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
@@ -120,11 +118,13 @@ public class ServingListActivity extends Activity
                             cursor.moveToFirst();
                             if (!cursor.isAfterLast()) {
                                 long food_id = cursor.getLong(0);
+                                cursor.close();
                                 Intent detailIntent = new Intent(ServingListActivity.this, ServingDetailActivity.class);
                                 detailIntent.putExtra(ServingDetailFragment.ARG_ITEM_ID, food_id);
                                 startActivity(detailIntent);
                                 return null;
                             } else {
+                                cursor.close();
                                 return Utils.getNameFromBarcode(barcode);
                             }
                         }
