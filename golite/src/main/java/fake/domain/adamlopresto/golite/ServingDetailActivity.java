@@ -45,16 +45,20 @@ public class ServingDetailActivity extends Activity {
         if (savedInstanceState == null) {
             // Create the detail fragment and add it to the activity
             // using a fragment transaction.
+            /*
             Bundle arguments = new Bundle();
-            arguments.putLong(ServingDetailFragment.ARG_ITEM_ID,
-                    getIntent().getLongExtra(ServingDetailFragment.ARG_ITEM_ID, -1L));
+            if (extras != null){
+                arguments.putLong(ServingDetailFragment.ARG_ITEM_ID,
+                    extras.getLong(ServingDetailFragment.ARG_ITEM_ID, -1L));
 
-            String newItemName = getIntent().getStringExtra(ServingDetailFragment.ARG_FOOD_NAME);
+            String newItemName = extras.getString(ServingDetailFragment.ARG_FOOD_NAME);
             if (!TextUtils.isEmpty(newItemName))
                 arguments.putString(ServingDetailFragment.ARG_FOOD_NAME, newItemName);
 
+            */
+
             fragment = new ServingDetailFragment();
-            fragment.setArguments(arguments);
+            fragment.setArguments(getIntent().getExtras());
             getFragmentManager().beginTransaction()
                     .add(R.id.serving_detail_container, fragment)
                     .commit();

@@ -3,8 +3,11 @@ package fake.domain.adamlopresto.golite;
 import android.app.Activity;
 import android.content.Intent;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.widget.Toast;
 
 import com.google.zxing.integration.android.IntentIntegrator;
@@ -89,21 +92,66 @@ public class ServingListActivity extends Activity
 
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
         IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
-        if (scanResult != null) {
-            SQLiteDatabase db = DatabaseHelper.getInstance(this).getReadableDatabase();
-            Cursor cursor = db.query(BarcodesTable.TABLE, new String[]{BarcodesTable.COLUMN_FOOD},
-                    BarcodesTable.COLUMN_BARCODE + "=?", new String[]{scanResult.getContents()},
-                    null, null, null);
-            if (!cursor.isAfterLast()){
-                cursor.moveToFirst();
-                long food_id = cursor.getLong(0);
-                Intent detailIntent = new Intent(this, ServingDetailActivity.class);
-                detailIntent.putExtra(ServingDetailFragment.ARG_ITEM_ID, food_id);
-                startActivity(detailIntent);
+            if(scanResult!=null){
+                final String barcode = scanResult.getContents();
+                new AsyncTask<String, Void, String>() {
+                    /**
+                     * Override this method to perform a computation on a background thread. The
+                     * specified parameters are the parameters passed to {@link #execute}
+                     * by the caller of this task.
+                     * <p/>
+                     * This method can call {@link #publishProgress} to publish updates
+                     * on the UI thread.
+                     *
+                     * @param params The parameters of the task.
+                     * @return A result, defined by the subclass of this task.
+                     * @see #onPreExecute()
+                     * @see #onPostExecute
+                     * @see #publishProgress
+                     */
+                    @Override
+                    protected String doInBackground(String... params) {
+                        String barcode = params[0];
+                        if (!TextUtils.isEmpty(barcode)) {
+                            SQLiteDatabase db = DatabaseHelper.getInstance(ServingListActivity.this).getReadableDatabase();
+                            Cursor cursor = db.query(BarcodesTable.TABLE, new String[]{BarcodesTable.COLUMN_FOOD},
+                                    BarcodesTable.COLUMN_BARCODE + "=?", new String[]{barcode},
+                                    null, null, null);
+                            cursor.moveToFirst();
+                            if (!cursor.isAfterLast()) {
+                                long food_id = cursor.getLong(0);
+                                Intent detailIntent = new Intent(ServingListActivity.this, ServingDetailActivity.class);
+                                detailIntent.putExtra(ServingDetailFragment.ARG_ITEM_ID, food_id);
+                                startActivity(detailIntent);
+                                return null;
+                            } else {
+                                return Utils.getNameFromBarcode(barcode);
+                            }
+                        }
+                        return null;
+                    }
 
-            } else {
-                Toast.makeText(this, "No food found with barcode "+scanResult.getContents(), Toast.LENGTH_LONG).show();
+                    /**
+                     * <p>Runs on the UI thread after {@link #doInBackground}. The
+                     * specified result is the value returned by {@link #doInBackground}.</p>
+                     * <p/>
+                     * <p>This method won't be invoked if the task was cancelled.</p>
+                     *
+                     * @param s The result of the operation computed by {@link #doInBackground}.
+                     * @see #onPreExecute
+                     * @see #doInBackground
+                     * @see #onCancelled(Object)
+                     */
+                    @Override
+                    protected void onPostExecute(String s) {
+                        if (s != null) {
+                            Intent detailIntent = new Intent(ServingListActivity.this, ServingDetailActivity.class);
+                            detailIntent.putExtra(ServingDetailFragment.ARG_FOOD_NAME, s);
+                            detailIntent.putExtra(ServingDetailFragment.ARG_BARCODE, barcode);
+                            startActivity(detailIntent);
+                        }
+                    }
+                }.execute(barcode);
             }
-        }
     }
 }

@@ -65,6 +65,8 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
      */
     public static final String ARG_ITEM_ID = "item_id";
     public static final String ARG_FOOD_NAME = "food_name";
+    public static final String ARG_BARCODE = "barcode";
+    public static final String ARG_NOTES = "notes";
 
     private static final int FOOD_LOADER = 0;
     private static final int SERVINGS_LOADER = 1;
@@ -130,6 +132,7 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
                     name.setText(foodName);
                     createNewServing();
                 }
+                //TODO: copy notes for new items
             }
         } else {
             LoaderManager manager = getLoaderManager();
@@ -174,6 +177,13 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
                 }
                 Uri newItem = getActivity().getContentResolver().insert(GoLiteContentProvider.FOOD_URI, values);
                 food_id = Long.parseLong(newItem.getLastPathSegment());
+                Bundle args = getArguments();
+                if (args != null){
+                    String barcode = args.getString(ARG_BARCODE);
+                    if (!TextUtils.isEmpty(barcode)){
+                        addBarcode(barcode);
+                    }
+                }
                 return true;
             } catch (SQLiteConstraintException e) {
                 Toast.makeText(getActivity(), "Another food with that name already exists.", Toast.LENGTH_LONG).show();
