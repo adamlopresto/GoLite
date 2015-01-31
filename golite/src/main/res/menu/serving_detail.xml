@@ -12,5 +12,9 @@
         android:title="Scan"
         android:showAsAction="ifRoom"
         />
+    <item
+        android:id="@+id/menu_delete_barcodes"
+        android:title="Delete barcodes"
+        android:showAsAction="never" />
 
 </menu>

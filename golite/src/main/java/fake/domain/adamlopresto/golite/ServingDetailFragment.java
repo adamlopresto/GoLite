@@ -240,7 +240,13 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
                 return createNewServing();
             case R.id.menu_scan:
                 IntentIntegrator integrator = new IntentIntegrator(getActivity());
+                integrator.addExtra(ARG_ITEM_ID, Long.valueOf(food_id));
                 integrator.initiateScan();
+                return true;
+            case R.id.menu_delete_barcodes:
+                DatabaseHelper helper = DatabaseHelper.getInstance(getActivity());
+                SQLiteDatabase database = helper.getWritableDatabase();
+                database.delete(BarcodesTable.TABLE, BarcodesTable.COLUMN_FOOD+" = ?", DatabaseHelper.idToArgs(food_id));
                 return true;
         }
 
@@ -347,7 +353,11 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
     }
 
     public void addBarcode(String barcode) {
-        DatabaseHelper helper = DatabaseHelper.getInstance(getActivity());
+        addBarcode(food_id, barcode, getActivity());
+    }
+
+    public static void addBarcode(long food_id, String barcode, Context context){
+        DatabaseHelper helper = DatabaseHelper.getInstance(context);
         SQLiteDatabase db = helper.getWritableDatabase();
         ContentValues values = new ContentValues(2);
         values.put(BarcodesTable.COLUMN_FOOD, food_id);

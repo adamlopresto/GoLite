@@ -83,6 +83,8 @@ public class ServingDetailActivity extends Activity {
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
         IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
         if (scanResult != null) {
+            if (fragment == null)
+                fragment = (ServingDetailFragment)getFragmentManager().findFragmentById(R.id.serving_detail_container);
             fragment.addBarcode(scanResult.getContents());
         }
     }
