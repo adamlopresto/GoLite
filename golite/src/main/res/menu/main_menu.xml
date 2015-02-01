@@ -9,14 +9,15 @@
         android:actionViewClass="android.widget.SearchView"
         />
     <item
+        android:id="@+id/menu_scan"
+        android:title="Scan"
+        android:icon="@drawable/ic_action_barcode"
+        android:showAsAction="ifRoom"
+        />
+    <item
         android:id="@+id/menu_new"
         android:title="@string/new_food"
         android:icon="@drawable/ic_action_new"
-        android:showAsAction="always"
-        />
-    <item
-        android:id="@+id/menu_scan"
-        android:title="Scan"
         android:showAsAction="ifRoom"
         />
     <item

@@ -63,7 +63,7 @@ import fake.domain.adamlopresto.golite.db.TotalsView;
  * interface.
  */
 @SuppressWarnings("WeakerAccess")
-public class ServingListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor>, SearchView.OnQueryTextListener {
+public class ServingListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor>, SearchView.OnQueryTextListener, MenuItem.OnActionExpandListener {
 
     /**
      * The serialization (saved instance state) Bundle key representing the
@@ -107,6 +107,8 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
     private TextView total;
 
     private String query;
+    private MenuItem scanItem;
+    private MenuItem newItem;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -390,8 +392,12 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         try {
             inflater.inflate(R.menu.main_menu, menu);
-            SearchView searchView = (SearchView) menu.findItem(R.id.search).getActionView();
+            MenuItem searchItem = menu.findItem(R.id.search);
+            searchItem.setOnActionExpandListener(this);
+            SearchView searchView = (SearchView) searchItem.getActionView();
             searchView.setOnQueryTextListener(this);
+            scanItem = menu.findItem(R.id.menu_scan);
+            newItem = menu.findItem(R.id.menu_new);
         } catch (Exception e){
             Utils.error(getContext(), e);
         }
@@ -535,6 +541,36 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
             throw new AssertionError("Null context");
         }
         return context;
+    }
+
+    /**
+     * Called when a menu item with {@link android.view.MenuItem#SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW}
+     * is expanded.
+     *
+     * @param item Item that was expanded
+     * @return true if the item should expand, false if expansion should be suppressed.
+     */
+    @Override
+    public boolean onMenuItemActionExpand(MenuItem item) {
+        newItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+        scanItem.setVisible(false);
+        return true;
+    }
+
+    /**
+     * Called when a menu item with {@link android.view.MenuItem#SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW}
+     * is collapsed.
+     *
+     * @param item Item that was collapsed
+     * @return true if the item should collapse, false if collapsing should be suppressed.
+     */
+    @Override
+    public boolean onMenuItemActionCollapse(MenuItem item) {
+        scanItem.setVisible(true);
+        newItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+        query = null;
+        restartLoaders(false);
+        return true;
     }
 
     /**

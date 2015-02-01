@@ -146,7 +146,8 @@ public class ServingListActivity extends Activity
                     protected void onPostExecute(String s) {
                         if (s != null) {
                             Intent detailIntent = new Intent(ServingListActivity.this, ServingDetailActivity.class);
-                            detailIntent.putExtra(ServingDetailFragment.ARG_FOOD_NAME, s);
+                            if (!"null".equals(s))
+                                detailIntent.putExtra(ServingDetailFragment.ARG_FOOD_NAME, s);
                             detailIntent.putExtra(ServingDetailFragment.ARG_BARCODE, barcode);
                             startActivity(detailIntent);
                         }
