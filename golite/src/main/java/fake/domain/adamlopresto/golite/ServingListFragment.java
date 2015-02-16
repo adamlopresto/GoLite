@@ -107,6 +107,7 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
     private TextView total;
 
     private String query;
+    private MenuItem searchItem;
     private MenuItem scanItem;
     private MenuItem newItem;
 
@@ -373,6 +374,9 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
     @Override
     public void onResume() {
         super.onResume();
+        if (searchItem != null) {
+            searchItem.collapseActionView();
+        }
         query = null;
         getContext().getContentResolver().delete(GoLiteContentProvider.DELETE_INVALID_URI, null, null);
         restartLoaders(true);
@@ -392,7 +396,7 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         try {
             inflater.inflate(R.menu.main_menu, menu);
-            MenuItem searchItem = menu.findItem(R.id.search);
+            searchItem = menu.findItem(R.id.search);
             searchItem.setOnActionExpandListener(this);
             SearchView searchView = (SearchView) searchItem.getActionView();
             searchView.setOnQueryTextListener(this);
