@@ -107,7 +107,7 @@ public class CalculatorActivity extends Activity {
                         case NUM2:
                         case NUM2DEC:
                             calc();
-                            number.setText(Double.toString(num1));
+                            number.setText(Utils.NUMBER_FORMAT.format(num1));
                             state = State.NUM1;
                             doneButton.setText("DONE");
                     }
@@ -117,36 +117,42 @@ public class CalculatorActivity extends Activity {
             View.OnClickListener addSelf = new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Editable text = number.getText();
-                    text.append(((TextView)v).getText());
+                    doneButton.setEnabled(true);
                     int digit = Integer.parseInt(((TextView)v).getText().toString());
                     switch (state) {
                         case EMPTY:
                             num1 = digit;
                             state = State.NUM1;
+                            number.setText(Utils.NUMBER_FORMAT.format(num1));
                             doneButton.setText("DONE");
                             break;
                         case NUM1:
                             num1 *= 10;
                             num1 += digit;
+                            number.setText(Utils.NUMBER_FORMAT.format(num1));
                             break;
                         case NUM1DEC:
                             //TODO
                             break;
-                        case OPERATOR:
+                        case OPERATOR: {
+                            Editable text = number.getText();
+                            text.append(((TextView) v).getText());
                             num2 = digit;
                             state = State.NUM2;
                             doneButton.setText("=");
                             break;
-                        case NUM2:
+                        }
+                        case NUM2: {
+                            Editable text = number.getText();
+                            text.append(((TextView) v).getText());
                             num2 *= 10;
                             num2 += digit;
                             break;
+                        }
                         case NUM2DEC:
                             //TODO
                             break;
                     }
-                    doneButton.setEnabled(true);
                 }
             };
 
@@ -177,7 +183,7 @@ public class CalculatorActivity extends Activity {
                         case NUM1DEC:
                         case OPERATOR:
                             operator = oper;
-                            number.setText(Double.toString(num1)+oper);
+                            number.setText(Utils.NUMBER_FORMAT.format(num1)+oper);
                             state = State.OPERATOR;
                             break;
                     }

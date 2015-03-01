@@ -40,7 +40,6 @@ import com.google.zxing.integration.android.IntentIntegrator;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.text.NumberFormat;
 import java.util.Collection;
 import java.util.HashSet;
 
@@ -79,8 +78,6 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
     private EditText notes;
     @NotNull
     private FoodServingAdapter adapter;
-
-    private static final NumberFormat NUMBER_FORMAT = NumberFormat.getNumberInstance();
 
     private Collection<ViewHolder> activeHolders = new HashSet<>();
     @Nullable
@@ -385,7 +382,7 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (pendingHolder != null){
             if (Activity.RESULT_OK == resultCode){
-                pendingHolder.quantityView.setText(String.valueOf(data.getDoubleExtra("result", 0.0)));
+                pendingHolder.quantityView.setText(Utils.NUMBER_FORMAT.format(data.getDoubleExtra("result", 0.0)));
                 pendingHolder.updateAfterEdit();
             }
 
@@ -410,10 +407,10 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
 
         void extractFrom(@NotNull Cursor cursor) {
             serving_id = cursor.getLong(0);
-            numberView.setText(NUMBER_FORMAT.format(cursor.getDouble(1)));
+            numberView.setText(Utils.NUMBER_FORMAT.format(cursor.getDouble(1)));
             unitsView.setText(cursor.getString(2));
             calories = cursor.getDouble(3);
-            caloriesView.setText(NUMBER_FORMAT.format(calories));
+            caloriesView.setText(Utils.NUMBER_FORMAT.format(calories));
             if (cursor.isNull(5)) {
                 quantityView.setText("");
                 totalView.setText("");
@@ -421,10 +418,10 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
                 totalLabel.setVisibility(View.INVISIBLE);
             } else {
                 quantity = cursor.getDouble(4);
-                quantityView.setText(NUMBER_FORMAT.format(quantity));
+                quantityView.setText(Utils.NUMBER_FORMAT.format(quantity));
                 history_id = cursor.getLong(5);
                 total = quantity * calories;
-                totalView.setText(NUMBER_FORMAT.format(total));
+                totalView.setText(Utils.NUMBER_FORMAT.format(total));
                 totalLabel.setVisibility(View.VISIBLE);
             }
             food_id = cursor.getLong(6);
@@ -457,7 +454,7 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
             } else {
                 //Now has a quantity
                 total = newQty * calories;
-                totalView.setText(NUMBER_FORMAT.format(total));
+                totalView.setText(Utils.NUMBER_FORMAT.format(total));
                 totalLabel.setVisibility(View.VISIBLE);
                 if (history_id == -1L) {
                     //Had no value, so create one
@@ -503,7 +500,7 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
             switch (item.getItemId()){
                 case R.id.edit:
                     showEditDialog(quantityView.getContext(), numberView.getText(),
-                            unitsView.getText(), NUMBER_FORMAT.format(calories), food_id, serving_id);
+                            unitsView.getText(), Utils.NUMBER_FORMAT.format(calories), food_id, serving_id);
                     return true;
                 case R.id.delete:
                     //TODO

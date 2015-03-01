@@ -75,6 +75,7 @@
     <Button
        android:text="."
        android:id="@+id/btnDecimalPoint"
+       android:enabled="false"
         />
     <Button
         android:text="0"
@@ -92,6 +93,7 @@
     <Button
         android:text="DONE"
         android:id="@+id/done"
+        android:enabled="false"
         android:layout_width="match_parent"
         android:layout_columnSpan="4"
         />
