@@ -10,6 +10,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteConstraintException;
@@ -82,6 +83,8 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
     private static final NumberFormat NUMBER_FORMAT = NumberFormat.getNumberInstance();
 
     private Collection<ViewHolder> activeHolders = new HashSet<>();
+    @Nullable
+    private ViewHolder pendingHolder;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -365,6 +368,30 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
         db.insert(BarcodesTable.TABLE, null, values);
     }
 
+    /**
+     * Receive the result from a previous call to
+     * {@link #startActivityForResult(android.content.Intent, int)}.  This follows the
+     * related Activity API as described there in
+     * {@link android.app.Activity#onActivityResult(int, int, android.content.Intent)}.
+     *
+     * @param requestCode The integer request code originally supplied to
+     *                    startActivityForResult(), allowing you to identify who this
+     *                    result came from.
+     * @param resultCode  The integer result code returned by the child activity
+     *                    through its setResult().
+     * @param data        An Intent, which can return result data to the caller
+     */
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (pendingHolder != null){
+            if (Activity.RESULT_OK == resultCode){
+                pendingHolder.quantityView.setText(String.valueOf(data.getDoubleExtra("result", 0.0)));
+                pendingHolder.updateAfterEdit();
+            }
+
+        }
+    }
+
     private static class ViewHolder implements View.OnClickListener, PopupMenu.OnMenuItemClickListener {
         EditText quantityView;
         TextView numberView;
@@ -532,6 +559,14 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
             holder.totalView = (TextView) view.findViewById(R.id.total);
             holder.totalLabel = (TextView) view.findViewById(R.id.total_label);
 
+            view.findViewById(R.id.calculate).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    pendingHolder = holder;
+                    Intent intent = new Intent(getActivity(), CalculatorActivity.class);
+                    startActivityForResult(intent, 15);
+                }
+            });
             view.findViewById(R.id.overflow).setOnClickListener(holder);
 
             holder.quantityView.setOnEditorActionListener(new TextView.OnEditorActionListener() {

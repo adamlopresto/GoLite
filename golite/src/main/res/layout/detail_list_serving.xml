@@ -15,6 +15,14 @@
         android:imeOptions="actionDone"
         />
     <TextView
+        android:id="@+id/calculate"
+        android:text="="
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        style="@android:style/Widget.Button.Small"
+        />
+
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="3sp"

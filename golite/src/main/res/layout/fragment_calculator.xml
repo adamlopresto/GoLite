@@ -1,0 +1,101 @@
+<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingLeft="@dimen/activity_horizontal_margin"
+                android:paddingRight="@dimen/activity_horizontal_margin"
+                android:paddingTop="@dimen/activity_vertical_margin"
+                android:paddingBottom="@dimen/activity_vertical_margin"
+                android:columnCount="4"
+                tools:context="fake.domain.adamlopresto.golite.CalculatorActivity$PlaceholderFragment">
+
+    <EditText
+        android:id="@+id/result"
+        android:text="0"
+        android:layout_columnSpan="4"
+        android:layout_width="match_parent"
+        android:textAlignment="viewEnd"
+        android:gravity="end"
+        android:inputType="numberDecimal"
+        android:imeOptions="actionDone"
+        />
+
+    <Button
+        android:text="7"
+        android:id="@+id/btn7"
+        />
+    <Button
+        android:text="8"
+        android:id="@+id/btn8"
+        />
+    <Button
+        android:text="9"
+        android:id="@+id/btn9"
+        />
+    <Button
+        android:text="÷"
+        android:id="@+id/btnDiv"
+        />
+
+
+    <Button
+        android:text="4"
+        android:id="@+id/btn4"
+        />
+    <Button
+        android:text="5"
+        android:id="@+id/btn5"
+        />
+    <Button
+        android:text="6"
+        android:id="@+id/btn6"
+        />
+    <Button
+        android:text="×"
+        android:id="@+id/btnTimes"
+        />
+
+    <Button
+        android:text="1"
+        android:id="@+id/btn1"
+        />
+    <Button
+        android:text="2"
+        android:id="@+id/btn2"
+        />
+    <Button
+        android:text="3"
+        android:id="@+id/btn3"
+        />
+    <Button
+        android:text="-"
+        android:id="@+id/btnMinus"
+        />
+
+    <Button
+       android:text="."
+       android:id="@+id/btnDecimalPoint"
+        />
+    <Button
+        android:text="0"
+        android:id="@+id/btn0"
+        />
+    <Button
+        android:text="DEL"
+        android:id="@+id/btnDel"
+        />
+    <Button
+        android:text="+"
+        android:id="@+id/btnPlus"
+        />
+
+    <Button
+        android:text="DONE"
+        android:id="@+id/done"
+        android:layout_width="match_parent"
+        android:layout_columnSpan="4"
+        />
+
+
+
+</GridLayout>
