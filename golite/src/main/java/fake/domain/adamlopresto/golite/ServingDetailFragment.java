@@ -268,8 +268,8 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
 
     private static void showEditDialog(final Context context, CharSequence num, CharSequence unitsStr,
                                        CharSequence calories, final long food_id, final long id) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        @SuppressWarnings("ConstantConditions") @SuppressLint("InflateParams") View view =
+        final AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        @SuppressLint ("InflateParams") View view =
                 LayoutInflater.from(context).inflate(R.layout.alert_serving_edit, null);
         if (view == null) {
             Utils.error(context, "Could not instantiate dialog to create new serving");
@@ -313,6 +313,18 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
         });
         builder.setNegativeButton(android.R.string.cancel, null);
         builder.show();
+        /*
+        AlertDialog dlg = builder.create();
+        final Activity activity = dlg.getOwnerActivity();
+        view.findViewById(R.id.calculateCalories).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(context, CalculatorActivity.class);
+                activity.startActivityForResult(intent, 10);
+            }
+        });
+        dlg.show();
+        */
     }
 
     @Override
