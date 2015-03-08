@@ -66,7 +66,7 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
     public static final String ARG_ITEM_ID = "item_id";
     public static final String ARG_FOOD_NAME = "food_name";
     public static final String ARG_BARCODE = "barcode";
-    public static final String ARG_NOTES = "notes";
+    //public static final String ARG_NOTES = "notes";
 
     private static final int FOOD_LOADER = 0;
     private static final int SERVINGS_LOADER = 1;
@@ -79,7 +79,7 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
     @NotNull
     private FoodServingAdapter adapter;
 
-    private Collection<ViewHolder> activeHolders = new HashSet<>();
+    private final Collection<ViewHolder> activeHolders = new HashSet<>();
     @Nullable
     private ViewHolder pendingHolder;
 
@@ -240,7 +240,7 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
                 return createNewServing();
             case R.id.menu_scan:
                 IntentIntegrator integrator = new IntentIntegrator(getActivity());
-                integrator.addExtra(ARG_ITEM_ID, Long.valueOf(food_id));
+                integrator.addExtra(ARG_ITEM_ID, food_id);
                 integrator.initiateScan();
                 return true;
             case R.id.menu_delete_barcodes:

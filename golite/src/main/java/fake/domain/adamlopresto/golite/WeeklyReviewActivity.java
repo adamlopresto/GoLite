@@ -128,7 +128,7 @@ public class WeeklyReviewActivity extends Activity {
             return rootView;
         }
 
-        private static void addRow(ViewGroup rootView, LayoutInflater inflater, String day, int calories, int overUnder){
+        private static void addRow(ViewGroup rootView, LayoutInflater inflater, CharSequence day, int calories, int overUnder){
             View row = inflater.inflate(R.layout.weekly_review_row, rootView, false);
             TextView dayView = ((TextView)row.findViewById(R.id.day));
             dayView.setText(day);

@@ -1,7 +1,6 @@
 package fake.domain.adamlopresto.golite;
 
 import android.app.Activity;
-import android.app.ActionBar;
 import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
@@ -11,10 +10,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.os.Build;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 
 public class CalculatorActivity extends Activity {
@@ -71,7 +68,8 @@ public class CalculatorActivity extends Activity {
             OPERATOR, //Have seen an operator, but no second number
             NUM2,     //Working on number2
             NUM2DEC   //Same, having seen decimal point
-        };
+        }
+
         private State state = State.EMPTY;
 
         private TextView doneButton;

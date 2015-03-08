@@ -10,7 +10,9 @@ import android.widget.TextView;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.BasicHttpParams;
 import org.jetbrains.annotations.NotNull;
@@ -65,8 +67,8 @@ public class Utils {
     }
 
     public static String getNameFromBarcode(String barcode){
-        DefaultHttpClient httpclient = new DefaultHttpClient(new BasicHttpParams());
-        HttpPost httppost = new HttpPost("http://www.outpan.com/api/get-product.php?apikey=7603ebff52fde57b0825a3226329b02e&barcode="+barcode);
+        HttpClient httpclient = new DefaultHttpClient(new BasicHttpParams());
+        HttpUriRequest httppost = new HttpPost("http://www.outpan.com/api/get-product.php?apikey=7603ebff52fde57b0825a3226329b02e&barcode="+barcode);
         httppost.setHeader("Content-type", "application/json");
 
         InputStream inputStream = null;
@@ -80,10 +82,10 @@ public class Utils {
             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"), 8);
             StringBuilder sb = new StringBuilder();
 
-            String line = null;
+            String line;
             while ((line = reader.readLine()) != null)
             {
-                sb.append(line + "\n");
+                sb.append(line).append('\n');
             }
             result = sb.toString();
         } catch (Exception e) {
@@ -92,7 +94,7 @@ public class Utils {
             // Oops
         }
         finally {
-            try{if(inputStream != null)inputStream.close();}catch(Exception squish){}
+            try{if(inputStream != null)inputStream.close();}catch(Exception ignored){}
         }
 
         try {

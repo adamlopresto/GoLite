@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="fake.domain.adamlopresto.golite" >
+          xmlns:tools="http://schemas.android.com/tools"
+          package="fake.domain.adamlopresto.golite" >
 
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
@@ -33,7 +34,8 @@
             android:name=".ServingDetailActivity"
             android:label="@string/title_serving_detail"
             android:parentActivityName=".ServingListActivity"
-            android:windowSoftInputMode="stateHidden" >
+            android:windowSoftInputMode="stateHidden"
+            tools:ignore="UnusedAttribute">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="fake.domain.adamlopresto.golite.ServingListActivity" />
