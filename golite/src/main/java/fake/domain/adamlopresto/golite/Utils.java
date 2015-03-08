@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
+import android.text.TextUtils;
 import android.util.Log;
 import android.widget.TextView;
 
@@ -103,5 +104,13 @@ public class Utils {
         } catch (JSONException e) {
             return e.toString();
         }
+    }
+
+    public static double getDoubleFromTextView(@NotNull TextView textView){
+        String string = textView.getText().toString();
+        if (TextUtils.isEmpty(string))
+            return 0.0;
+        else
+            return Double.parseDouble(string);
     }
 }

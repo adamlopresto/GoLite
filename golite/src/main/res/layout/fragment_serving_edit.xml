@@ -1,0 +1,127 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:tools="http://schemas.android.com/tools"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+             android:orientation="vertical"
+             tools:context="fake.domain.adamlopresto.golite.ServingEditFragment"
+    >
+    <LinearLayout
+        android:id="@+id/fractions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        >
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <EditText
+                android:id="@+id/nutrition_info_cal"
+                android:layout_width="wrap_content"
+                android:minEms="3"
+                android:layout_height="wrap_content"
+                android:hint="100"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentLeft="true"
+                android:inputType="numberSigned|numberDecimal"
+                />
+            <TextView
+                android:id="@+id/cal_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="cal"
+                android:layout_toRightOf="@id/nutrition_info_cal"
+                android:layout_alignBaseline="@id/nutrition_info_cal"
+                />
+            <View
+                android:id="@+id/divider_left"
+                android:layout_width="150sp"
+                android:layout_height="2sp"
+                android:layout_below="@id/nutrition_info_cal"
+                android:background="@android:color/black"
+                />
+
+            <EditText
+                android:id="@+id/nutrition_info_serving_size"
+                android:layout_width="50sp"
+                android:layout_height="wrap_content"
+                android:text="1"
+                android:layout_below="@id/divider_left"
+                android:inputType="numberSigned|numberDecimal"
+                />
+            <EditText
+                android:id="@+id/units"
+                android:layout_width="100sp"
+                android:layout_height="wrap_content"
+                android:text="serving"
+                android:layout_toRightOf="@id/nutrition_info_serving_size"
+                android:layout_alignBaseline="@id/nutrition_info_serving_size"
+                />
+
+            </RelativeLayout>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text=" = "
+            android:textSize="18sp"
+            />
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            >
+            <TextView
+                android:id="@+id/serving_cal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="100"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentLeft="true"
+                />
+            <TextView
+                android:id="@+id/serving_cal_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=" cal"
+                android:layout_toRightOf="@id/serving_cal"
+                android:layout_alignBaseline="@id/serving_cal"
+                />
+            <View
+                android:id="@+id/divider_right"
+                android:layout_width="fill_parent"
+                android:layout_height="2sp"
+                android:layout_below="@id/serving_cal"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentRight="true"
+                android:background="@android:color/black"
+                />
+
+            <EditText
+                android:id="@+id/typical_serving"
+                android:layout_width="50sp"
+                android:layout_height="wrap_content"
+                android:text="1"
+                android:layout_below="@id/divider_right"
+                android:inputType="numberSigned|numberDecimal"
+                />
+            <TextView
+                android:id="@+id/units_label"
+                android:layout_width="100sp"
+                android:layout_height="wrap_content"
+                android:text="serving"
+                android:layout_toRightOf="@id/typical_serving"
+                android:layout_alignBaseline="@id/typical_serving"
+                />
+
+        </RelativeLayout>
+
+    </LinearLayout>
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Show in main list"
+        android:checked="true"
+        />
+
+</LinearLayout>

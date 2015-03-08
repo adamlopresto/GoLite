@@ -21,4 +21,7 @@
     <string name="title_activity_weekly_review">Weekly Review</string>
     <string name="title_activity_calculator">CalculatorActivity</string>
 
+<!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
 </resources>
