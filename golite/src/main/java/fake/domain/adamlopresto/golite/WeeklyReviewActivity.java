@@ -1,5 +1,6 @@
 package fake.domain.adamlopresto.golite;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.ContentResolver;
@@ -77,27 +78,24 @@ public class WeeklyReviewActivity extends Activity {
             int day = calendar.get(Calendar.DAY_OF_WEEK);
             int offset;
             switch(day) {
-                case Calendar.SUNDAY:
-                    offset = 6;
-                    break;
-                case Calendar.MONDAY:
-                    offset = 7;
+                case Calendar.SATURDAY:
+                    offset = 1;
                     break;
                 default:
-                    offset = day - 2;
+                    offset = day + 1;
             }
             calendar.add(Calendar.DATE, -offset);
-            String lastMonday = DatabaseHelper.DATE_FORMAT.format(calendar.getTime());
+            String lastFriday = DatabaseHelper.DATE_FORMAT.format(calendar.getTime());
 
             ContentResolver resolver = getActivity().getContentResolver();
             Cursor cursor = resolver.query(GoLiteContentProvider.DAILY_TOTAL_URI,
                     new String[]{TotalsView.COLUMN_DATE, TotalsView.COLUMN_TOTAL},
-                    TotalsView.COLUMN_DATE + " >= ?", new String[]{lastMonday}, TotalsView.COLUMN_DATE);
+                    TotalsView.COLUMN_DATE + " >= ?", new String[]{lastFriday}, TotalsView.COLUMN_DATE);
             cursor.moveToFirst();
             int total = 0;
             int totalDiff = 0;
             int max = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(getActivity()).getString("calories_per_day_key", "1400"));
-            DateFormat dayOfWeekFormat = new SimpleDateFormat("EEEE");
+            @SuppressLint ("SimpleDateFormat") DateFormat dayOfWeekFormat = new SimpleDateFormat("EEEE");
             while (!cursor.isAfterLast()){
                 String dateAsString = cursor.getString(0);
                 if (today.equals(dateAsString)){
