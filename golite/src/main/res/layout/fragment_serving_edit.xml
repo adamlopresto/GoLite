@@ -55,7 +55,7 @@
                 android:text="serving"
                 android:layout_toRightOf="@id/nutrition_info_serving_size"
                 android:layout_alignBaseline="@id/nutrition_info_serving_size"
-                />
+                android:inputType="textAutoComplete"/>
 
             </RelativeLayout>
         <TextView

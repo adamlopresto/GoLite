@@ -66,6 +66,7 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
     public static final String ARG_ITEM_ID = "item_id";
     public static final String ARG_FOOD_NAME = "food_name";
     public static final String ARG_BARCODE = "barcode";
+    public static final int CALCULATOR_REQUEST_CODE = 15;
     //public static final String ARG_NOTES = "notes";
 
     private static final int FOOD_LOADER = 0;
@@ -192,9 +193,8 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
                 Utils.error(getActivity(), e);
                 return false;
             }
-        } else {
-            return updateOnly();
         }
+        return updateOnly();
     }
 
     /**
@@ -400,6 +400,8 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
      */
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode != CALCULATOR_REQUEST_CODE)
+            return;
         if (pendingHolder != null){
             if (Activity.RESULT_OK == resultCode){
                 pendingHolder.quantityView.setText(Utils.NUMBER_FORMAT.format(data.getDoubleExtra("result", 0.0)));
@@ -581,7 +583,7 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
                 public void onClick(View v) {
                     pendingHolder = holder;
                     Intent intent = new Intent(getActivity(), CalculatorActivity.class);
-                    startActivityForResult(intent, 15);
+                    startActivityForResult(intent, CALCULATOR_REQUEST_CODE);
                 }
             });
             view.findViewById(R.id.overflow).setOnClickListener(holder);
