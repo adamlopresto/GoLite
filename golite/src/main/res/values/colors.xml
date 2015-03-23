@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="backgroundOverLimit">#FFFF8888</color>
+    <color name="backgroundRoomLeft">#FF88FF88</color>
+</resources>

@@ -169,18 +169,19 @@ public class ServingListFragment extends ListFragment implements LoaderManager.L
                 if (data.moveToFirst())
                     totalNum = data.getInt(0);
 
-                assert getActivity() != null;
-                int max = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(getActivity()).getString("calories_per_day_key", "1400"));
+                Context context = getActivity();
+                assert context != null;
+                int max = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(context).getString("calories_per_day_key", "1400"));
                 int left = max-totalNum;
                 if (left < 0){
                     total.setText(String.format("%d/%d, over by %d", totalNum, max, -left));
-                    total.setBackgroundColor(0xFFFF8888);
+                    total.setBackgroundColor(context.getResources().getColor(R.color.backgroundOverLimit));
                 } else if (left == 0){
                     total.setText(String.format("%d/%d", totalNum, max));
-                    total.setBackgroundColor(0xFF88FF88);
+                    total.setBackgroundColor(context.getResources().getColor(R.color.backgroundRoomLeft));
                 } else {
                     total.setText(String.format("%d/%d, %d left", totalNum, max, left));
-                    total.setBackgroundColor(0xFF88FF88);
+                    total.setBackgroundColor(context.getResources().getColor(R.color.backgroundRoomLeft));
                 }
                 break;
             default:
