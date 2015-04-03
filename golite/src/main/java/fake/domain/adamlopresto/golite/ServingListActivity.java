@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.text.TextUtils;
 
 import com.google.zxing.integration.android.IntentIntegrator;
@@ -31,7 +32,7 @@ import fake.domain.adamlopresto.golite.db.DatabaseHelper;
  * {@link ServingListFragment.Callbacks} interface
  * to listen for item selections.
  */
-public class ServingListActivity extends Activity
+public class ServingListActivity extends ActionBarActivity
         implements ServingListFragment.Callbacks {
 
     /**

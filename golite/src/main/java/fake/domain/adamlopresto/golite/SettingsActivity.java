@@ -3,9 +3,10 @@ package fake.domain.adamlopresto.golite;
 import android.app.Activity;
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
+import android.support.v7.app.ActionBarActivity;
 
 @SuppressWarnings("WeakerAccess")
-public class SettingsActivity extends Activity {
+public class SettingsActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

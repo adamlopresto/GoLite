@@ -1,8 +1,8 @@
 package fake.domain.adamlopresto.golite;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.view.MenuItem;
 
 import com.google.zxing.integration.android.IntentIntegrator;
@@ -18,7 +18,7 @@ import com.google.zxing.integration.android.IntentResult;
  * more than a {@link ServingDetailFragment}.
  */
 @SuppressWarnings("WeakerAccess")
-public class ServingDetailActivity extends Activity {
+public class ServingDetailActivity extends ActionBarActivity {
 
     private ServingDetailFragment fragment;
 
@@ -29,7 +29,7 @@ public class ServingDetailActivity extends Activity {
 
         // Show the Up button in the action bar.
         //noinspection ConstantConditions
-        getActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // savedInstanceState is non-null when there is fragment state
         // saved from previous configurations of this activity
