@@ -15,9 +15,11 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.view.MenuItemCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SearchViewCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.text.TextUtils;
 import android.util.SparseBooleanArray;
 import android.view.ActionMode;
@@ -114,6 +116,7 @@ public class ServingListFragment extends ListFragment
     private MenuItem searchItem;
     private MenuItem scanItem;
     private MenuItem newItem;
+    private ActionBarDrawerToggle drawerToggle;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -246,7 +249,7 @@ public class ServingListFragment extends ListFragment
 
             @Override
             public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-                switch (item.getItemId()){
+                switch (item.getItemId()) {
                     case R.id.delete:
                         SparseBooleanArray items = getListView().getCheckedItemPositions();
                         assert items != null;
@@ -258,9 +261,9 @@ public class ServingListFragment extends ListFragment
                         ContentValues cv = new ContentValues(1);
                         cv.put(ServingsTable.COLUMN_LISTED, false);
 
-                        for (int i = 0 ; i < size; i++){
+                        for (int i = 0; i < size; i++) {
                             //in theory, we shouldn't have false values. In theory.
-                            if (items.valueAt(i)){
+                            if (items.valueAt(i)) {
                                 long serving_id = listView.getItemIdAtPosition(items.keyAt(i));
                                 resolver.update(GoLiteContentProvider.SERVING_URI, cv, "_id = ?",
                                         DatabaseHelper.idToArgs(serving_id));
@@ -322,7 +325,9 @@ public class ServingListFragment extends ListFragment
             Utils.error(getContext(), "Null ActionBar");
             return;
         }
-        actionBar.setDisplayShowTitleEnabled(false);
+        //actionBar.setDisplayShowTitleEnabled(false);
+        /*
+
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
 
         Context themedContext = actionBar.getThemedContext();
@@ -373,7 +378,7 @@ public class ServingListFragment extends ListFragment
                 return true;
             }
         });
-
+        */
     }
 
     @Override
@@ -564,6 +569,45 @@ public class ServingListFragment extends ListFragment
         query = null;
         restartLoaders(false);
         return true;
+    }
+
+    /**
+     * My own method to pass navigation items back to the fragment.
+     * @param itemPosition
+     */
+    public void onNavigationDrawerItemSelected(int itemPosition) {
+        Calendar cal = new GregorianCalendar();
+        switch (itemPosition){
+            case 0: //All
+                activeDate = DatabaseHelper.DATE_FORMAT.format(cal.getTime());
+                showAll = true;
+                break;
+            case 2: //Yesterday
+                cal.add(GregorianCalendar.DAY_OF_MONTH, -1);
+                // fall through
+            case 1: //Today
+                activeDate = DatabaseHelper.DATE_FORMAT.format(cal.getTime());
+                showAll = false;
+                break;
+            case 3: //other date
+                DatePickerDialog dlg = new DatePickerDialog(getActivity(),
+                        new DatePickerDialog.OnDateSetListener() {
+                            @Override
+                            public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+                                Calendar cal = new GregorianCalendar(year, monthOfYear, dayOfMonth);
+                                activeDate = DatabaseHelper.DATE_FORMAT.format(cal.getTime());
+                                showAll = false;
+                                restartLoaders(true);
+                            }
+                        }, cal.get(Calendar.YEAR),
+                        cal.get(Calendar.MONTH),
+                        cal.get(Calendar.DAY_OF_MONTH));
+                dlg.show();
+                break;
+            default:
+                Utils.error(getActivity(), "Unexpected dropdown item, position "+itemPosition);
+        }
+        restartLoaders(true);
     }
 
     /**

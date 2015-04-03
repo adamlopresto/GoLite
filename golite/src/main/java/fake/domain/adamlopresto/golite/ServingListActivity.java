@@ -2,12 +2,20 @@ package fake.domain.adamlopresto.golite;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.text.TextUtils;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
@@ -40,6 +48,7 @@ public class ServingListActivity extends ActionBarActivity
      * device.
      */
     private boolean mTwoPane;
+    private ActionBarDrawerToggle drawerToggle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +69,49 @@ public class ServingListActivity extends ActionBarActivity
                     .findFragmentById(R.id.serving_list))
                     .setActivateOnItemClick(true);
         }
+
+        ListView drawerList;
+        drawerList = (ListView) findViewById(R.id.left_drawer);
+        drawerList.setAdapter(new ArrayAdapter<>(this,
+                android.R.layout.simple_list_item_1, new String[]{
+                "All", "Today", "Yesterday", "Other date"
+        }));
+
+
+        final DrawerLayout drawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
+
+        drawerList.setOnItemClickListener(
+                new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                        drawerLayout.closeDrawers();
+
+                        ((ServingListFragment) getFragmentManager()
+                                .findFragmentById(R.id.serving_list)).onNavigationDrawerItemSelected(position);
+                    }
+                });
+
+        drawerToggle = new ActionBarDrawerToggle(this, drawerLayout,
+                R.string.drawer_opened, R.string.drawer_closed){
+
+            @Override
+            public void onDrawerClosed(View view) {
+                super.onDrawerClosed(view);
+                //activity.invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+            }
+
+            /** Called when a drawer has settled in a completely open state. */
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                super.onDrawerOpened(drawerView);
+                //activity.invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+            }
+        };
+
+        drawerLayout.setDrawerListener(drawerToggle);
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeButtonEnabled(true);
 
     }
     /**
@@ -155,5 +207,30 @@ public class ServingListActivity extends ActionBarActivity
                     }
                 }.execute(barcode);
             }
+    }
+
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        // Sync the toggle state after onRestoreInstanceState has occurred.
+        drawerToggle.syncState();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        drawerToggle.onConfigurationChanged(newConfig);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Pass the event to ActionBarDrawerToggle, if it returns
+        // true, then it has handled the app icon touch event
+        if (drawerToggle.onOptionsItemSelected(item)) {
+            return true;
+        }
+        // Handle your other action bar items...
+
+        return super.onOptionsItemSelected(item);
     }
 }
