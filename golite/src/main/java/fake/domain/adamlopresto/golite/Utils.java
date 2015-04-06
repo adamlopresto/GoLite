@@ -52,6 +52,8 @@ public class Utils {
             .show();
 
         Log.e("GoLite", throwable.getMessage(), throwable);
+
+        throw new RuntimeException(throwable);
     }
 
     public static void error(Context context, @NotNull String msg){

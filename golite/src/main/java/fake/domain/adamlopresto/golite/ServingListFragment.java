@@ -20,6 +20,7 @@ import android.support.v4.widget.SearchViewCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.widget.SearchView;
 import android.text.TextUtils;
 import android.util.SparseBooleanArray;
 import android.view.ActionMode;
@@ -408,8 +409,8 @@ public class ServingListFragment extends ListFragment
             inflater.inflate(R.menu.main_menu, menu);
             searchItem = menu.findItem(R.id.search);
             MenuItemCompat.setOnActionExpandListener(searchItem, this);
-            View searchView = MenuItemCompat.getActionView(searchItem);
-            SearchViewCompat.setOnQueryTextListener(searchView, new SearchViewCompat.OnQueryTextListenerCompat(){
+            SearchView searchView = (SearchView)MenuItemCompat.getActionView(searchItem);
+            searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener(){
                 @Override
                 public boolean onQueryTextSubmit(String query) {
                     Toast.makeText(getContext(), "Searching for: " + query + "...", Toast.LENGTH_SHORT).show();
