@@ -1,6 +1,5 @@
 package fake.domain.adamlopresto.golite;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
 import android.support.v7.app.ActionBarActivity;

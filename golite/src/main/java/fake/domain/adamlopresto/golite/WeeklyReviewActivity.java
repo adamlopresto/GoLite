@@ -1,7 +1,6 @@
 package fake.domain.adamlopresto.golite;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.Fragment;
 import android.content.ContentResolver;
 import android.database.Cursor;
