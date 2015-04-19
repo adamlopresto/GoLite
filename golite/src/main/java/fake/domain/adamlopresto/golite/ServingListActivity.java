@@ -1,6 +1,5 @@
 package fake.domain.adamlopresto.golite;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.Cursor;
