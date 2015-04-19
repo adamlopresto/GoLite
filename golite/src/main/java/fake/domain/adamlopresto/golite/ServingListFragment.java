@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.ListFragment;
 import android.app.LoaderManager;
+import android.app.SearchManager;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -405,7 +406,9 @@ public class ServingListFragment extends ListFragment
             inflater.inflate(R.menu.main_menu, menu);
             searchItem = menu.findItem(R.id.search);
             MenuItemCompat.setOnActionExpandListener(searchItem, this);
+            SearchManager searchManager = (SearchManager)getActivity().getSystemService(Context.SEARCH_SERVICE);
             SearchView searchView = (SearchView)MenuItemCompat.getActionView(searchItem);
+            searchView.setSearchableInfo(searchManager.getSearchableInfo(getActivity().getComponentName()));
             searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener(){
                 @Override
                 public boolean onQueryTextSubmit(String query) {
