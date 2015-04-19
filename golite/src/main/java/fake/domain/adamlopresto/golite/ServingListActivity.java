@@ -14,10 +14,16 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 import fake.domain.adamlopresto.golite.db.BarcodesTable;
 import fake.domain.adamlopresto.golite.db.DatabaseHelper;
@@ -69,13 +75,22 @@ public class ServingListActivity extends ActionBarActivity
                     .setActivateOnItemClick(true);
         }
 
-        ListView drawerList;
+        final ListView drawerList;
         drawerList = (ListView) findViewById(R.id.left_drawer);
-        drawerList.setAdapter(new ArrayAdapter<>(this,
-                android.R.layout.simple_list_item_1, new String[]{
-                "All", "Today", "Yesterday", "Other date"
-        }));
-
+        String[] dateChoices = new String[10];
+        dateChoices[0] = "All";
+        dateChoices[1] = "Today";
+        dateChoices[2] = "Yesterday";
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DATE, -2);
+        DateFormat dateFormat = new SimpleDateFormat("EEEE");
+        for (int i = 3 ; i <= 8 ; ++i){
+            dateChoices[i] = dateFormat.format(cal.getTime());
+            cal.add(Calendar.DATE, -1);
+        }
+        dateChoices[9] = "Other date";
+        drawerList.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_1,
+                dateChoices));
 
         final DrawerLayout drawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
 
@@ -211,6 +226,7 @@ public class ServingListActivity extends ActionBarActivity
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
+
         // Sync the toggle state after onRestoreInstanceState has occurred.
         drawerToggle.syncState();
     }

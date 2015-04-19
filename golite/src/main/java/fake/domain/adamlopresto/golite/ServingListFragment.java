@@ -15,8 +15,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.view.MenuItemCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v4.widget.SearchViewCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -32,12 +30,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.ListView;
 import android.widget.ResourceCursorAdapter;
-import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -574,7 +570,7 @@ public class ServingListFragment extends ListFragment
 
     /**
      * My own method to pass navigation items back to the fragment.
-     * @param itemPosition
+     * @param itemPosition The index of the selected item
      */
     public void onNavigationDrawerItemSelected(int itemPosition) {
         Calendar cal = new GregorianCalendar();
@@ -583,14 +579,20 @@ public class ServingListFragment extends ListFragment
                 activeDate = DatabaseHelper.DATE_FORMAT.format(cal.getTime());
                 showAll = true;
                 break;
-            case 2: //Yesterday
-                cal.add(GregorianCalendar.DAY_OF_MONTH, -1);
+            case 2: //Specific days last week
+            case 3:
+            case 4:
+            case 5:
+            case 6:
+            case 7:
+            case 8:
+                cal.add(GregorianCalendar.DAY_OF_MONTH, 1-itemPosition);
                 // fall through
             case 1: //Today
                 activeDate = DatabaseHelper.DATE_FORMAT.format(cal.getTime());
                 showAll = false;
                 break;
-            case 3: //other date
+            case 9: //other date
                 DatePickerDialog dlg = new DatePickerDialog(getActivity(),
                         new DatePickerDialog.OnDateSetListener() {
                             @Override
