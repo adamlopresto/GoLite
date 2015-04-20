@@ -10,13 +10,13 @@
 
     <TableRow tools:ignore="UselessParent">
         <TextView
-            android:text="Day"
+            android:text="@string/weekly_review_header_day"
             style="@style/weeklyReviewHeader"/>
         <TextView
-            android:text="Calories"
+            android:text="@string/calories"
             style="@style/weeklyReviewHeader"/>
         <TextView
-            android:text="Left"
+            android:text="@string/weekly_review_header_remaining"
             style="@style/weeklyReviewHeader"/>
         <TextView
             />

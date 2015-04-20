@@ -7,13 +7,14 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
 
 import java.text.SimpleDateFormat;
+import java.util.Locale;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final int CURRENT_VERSION = 5;
     private static final String DATABASE_NAME = "GoLite";
 
-    public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+    public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
 
     private static DatabaseHelper instance;
 

@@ -1,5 +1,6 @@
 <GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
+            xmlns:tools="http://schemas.android.com/tools"
+            android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
@@ -11,7 +12,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Number"
+        android:text="@string/number"
         android:id="@+id/textView"
         />
     <EditText
@@ -19,23 +20,24 @@
         android:layout_width="0dp"
         android:text="1"
         android:layout_gravity="fill_horizontal"
-        android:inputType="numberDecimal" />
+        android:inputType="numberDecimal"
+        tools:ignore="HardcodedText"/>
     <TextView
         android:id="@+id/calculateNumber"
         android:text="="
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         style="@android:style/Widget.Button.Small"
-        />
+        tools:ignore="HardcodedText"/>
 
     <TextView
-        android:text="Units"
+        android:text="@string/units"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         />
     <EditText
         android:layout_width="0dp"
-        android:text="serving"
+        android:text="@string/serving"
         android:layout_gravity="fill_horizontal"
         android:id="@+id/units"
         android:inputType="text"
@@ -43,7 +45,7 @@
         />
 
     <TextView
-        android:text="Calories"
+        android:text="@string/calories"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         />
@@ -61,11 +63,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         style="@android:style/Widget.Button.Small"
-        />
+        tools:ignore="HardcodedText"/>
 
     <CheckBox
         android:id="@+id/show_default"
-        android:text="Show in main list"
+        android:text="@string/show_in_main_list"
         android:checked="true"
         android:layout_columnSpan="2"
         />

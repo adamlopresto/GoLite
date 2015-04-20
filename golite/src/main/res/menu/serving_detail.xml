@@ -10,13 +10,13 @@
         />
     <item
         android:id="@+id/menu_scan"
-        android:title="Scan"
+        android:title="@string/menu_scan"
         android:icon="@drawable/ic_action_barcode_1"
         app:showAsAction="ifRoom"
         />
     <item
         android:id="@+id/menu_delete_barcodes"
-        android:title="Delete barcodes"
+        android:title="@string/menu_delete_barcodes"
         app:showAsAction="never" />
 
 </menu>

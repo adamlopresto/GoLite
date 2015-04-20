@@ -52,7 +52,8 @@
         <activity
             android:name=".WeeklyReviewActivity"
             android:label="@string/title_activity_weekly_review"
-            android:parentActivityName=".ServingListActivity" >
+            android:parentActivityName=".ServingListActivity"
+            tools:ignore="UnusedAttribute">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="fake.domain.adamlopresto.golite.ServingListActivity" />

@@ -1,5 +1,6 @@
 package fake.domain.adamlopresto.golite;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.Cursor;
@@ -14,9 +15,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
@@ -83,7 +82,7 @@ public class ServingListActivity extends ActionBarActivity
         dateChoices[2] = "Yesterday";
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DATE, -2);
-        DateFormat dateFormat = new SimpleDateFormat("EEEE");
+        @SuppressLint ("SimpleDateFormat") DateFormat dateFormat = new SimpleDateFormat("EEEE");
         for (int i = 3 ; i <= 8 ; ++i){
             dateChoices[i] = dateFormat.format(cal.getTime());
             cal.add(Calendar.DATE, -1);

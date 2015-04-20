@@ -12,7 +12,7 @@
         />
     <item
         android:id="@+id/menu_scan"
-        android:title="Scan"
+        android:title="@string/menu_scan"
         android:icon="@drawable/ic_action_barcode_1"
         app:showAsAction="ifRoom"
         />
@@ -29,6 +29,6 @@
         />
     <item
         android:id="@+id/weekly_review"
-        android:title="Review week"
+        android:title="@string/menu_weekly_review"
         />
 </menu>
