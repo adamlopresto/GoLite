@@ -58,17 +58,18 @@ public class CalculatorActivity extends ActionBarActivity {
 
         private EditText number;
 
-        private double num1 = 0;
-        private double num2 = 0;
+        //curNum is the number we're currently typing.
+        private StringBuffer curNum = new StringBuffer(32);
+
+        private double runningTotal = 0;
         private char operator;
 
         private enum State {
             EMPTY,    //No input yet
             NUM1,     //Working on the first number
-            NUM1DEC,  //Working on first number, have seen a decimal point
             OPERATOR, //Have seen an operator, but no second number
             NUM2,     //Working on number2
-            NUM2DEC   //Same, having seen decimal point
+            DONE,     //We've hit "=" after a calculation
         }
 
         private State state = State.EMPTY;
@@ -91,24 +92,35 @@ public class CalculatorActivity extends ActionBarActivity {
                         case EMPTY:
                             //TODO, probably error
                             break;
-                        case NUM1:
-                        case NUM1DEC:
+                        case NUM1: {
                             Intent intent = new Intent();
-                            intent.putExtra("result", num1);
+                            intent.putExtra("result", Double.parseDouble(curNum.toString()));
                             Activity activity = getActivity();
                             if (activity != null) {
                                 activity.setResult(Activity.RESULT_OK, intent);
                                 //Toast.makeText(activity, "Returning result "+numberDbl, Toast.LENGTH_LONG).show();
                                 activity.finish();
                             }
+                        }
                         case OPERATOR:
                             //TODO, probably error
+                            break;
                         case NUM2:
-                        case NUM2DEC:
                             calc();
-                            number.setText(Utils.NUMBER_FORMAT.format(num1));
-                            state = State.NUM1;
+                            number.setText(Utils.NUMBER_FORMAT.format(runningTotal));
+                            state = State.DONE;
                             doneButton.setText("DONE");
+                            break;
+                        case DONE: {
+                            Intent intent = new Intent();
+                            intent.putExtra("result", runningTotal);
+                            Activity activity = getActivity();
+                            if (activity != null) {
+                                activity.setResult(Activity.RESULT_OK, intent);
+                                //Toast.makeText(activity, "Returning result "+numberDbl, Toast.LENGTH_LONG).show();
+                                activity.finish();
+                            }
+                        }
                     }
                 }
             });
@@ -117,40 +129,36 @@ public class CalculatorActivity extends ActionBarActivity {
                 @Override
                 public void onClick(View v) {
                     doneButton.setEnabled(true);
-                    int digit = Integer.parseInt(((TextView)v).getText().toString());
+                    String digit = ((TextView)v).getText().toString();
                     switch (state) {
+                        case DONE:
+                            curNum.setLength(0);
+                            //fall through
                         case EMPTY:
-                            num1 = digit;
+                            curNum.append(digit);
                             state = State.NUM1;
-                            number.setText(Utils.NUMBER_FORMAT.format(num1));
+                            number.setText(curNum.toString());
                             doneButton.setText("DONE");
                             break;
                         case NUM1:
-                            num1 *= 10;
-                            num1 += digit;
-                            number.setText(Utils.NUMBER_FORMAT.format(num1));
-                            break;
-                        case NUM1DEC:
-                            //TODO
+                            curNum.append(digit);
+                            number.setText(curNum.toString());
                             break;
                         case OPERATOR: {
                             Editable text = number.getText();
                             text.append(((TextView) v).getText());
-                            num2 = digit;
+                            curNum.setLength(0);
+                            curNum.append(digit);
                             state = State.NUM2;
                             doneButton.setText("=");
                             break;
                         }
                         case NUM2: {
                             Editable text = number.getText();
-                            text.append(((TextView) v).getText());
-                            num2 *= 10;
-                            num2 += digit;
+                            text.append(digit);
+                            curNum.append(digit);
                             break;
                         }
-                        case NUM2DEC:
-                            //TODO
-                            break;
                     }
                 }
             };
@@ -165,6 +173,7 @@ public class CalculatorActivity extends ActionBarActivity {
             rootView.findViewById(R.id.btn7).setOnClickListener(addSelf);
             rootView.findViewById(R.id.btn8).setOnClickListener(addSelf);
             rootView.findViewById(R.id.btn9).setOnClickListener(addSelf);
+            rootView.findViewById(R.id.btnDecimalPoint).setOnClickListener(addSelf);
 
             View.OnClickListener operatorClick = new View.OnClickListener() {
                 @Override
@@ -175,14 +184,18 @@ public class CalculatorActivity extends ActionBarActivity {
                             //error;
                             break;
                         case NUM2:
-                        case NUM2DEC:
                             calc();
-                            //FALL THROUGH!
-                        case NUM1:
-                        case NUM1DEC:
-                        case OPERATOR:
+                            //fall through
+                        case DONE:
                             operator = oper;
-                            number.setText(Utils.NUMBER_FORMAT.format(num1)+oper);
+                            number.setText(Utils.NUMBER_FORMAT.format(runningTotal)+oper);
+                            state = State.OPERATOR;
+                            break;
+                        case NUM1:
+                        case OPERATOR:
+                            runningTotal = Double.parseDouble(curNum.toString());
+                            operator = oper;
+                            number.setText(curNum.toString()+oper);
                             state = State.OPERATOR;
                             break;
                     }
@@ -200,21 +213,23 @@ public class CalculatorActivity extends ActionBarActivity {
         }
 
         private void calc(){
+            double num2 = Double.parseDouble(curNum.toString());
             switch (operator){
                 case '+':
-                    num1 += num2;
+                    runningTotal += num2;
                     break;
                 case '-':
-                    num1 -= num2;
+                    runningTotal -= num2;
                     break;
                 case '×':
-                    num1 *= num2;
+                    runningTotal *= num2;
                     break;
                 case '÷':
-                    num1 /= num2;
+                    runningTotal /= num2;
                     break;
             }
-            num2 = 0;
+            curNum.setLength(0);
+            curNum.append(runningTotal);
         }
     }
 }

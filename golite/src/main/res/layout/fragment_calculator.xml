@@ -77,7 +77,6 @@
     <Button
        android:text="."
        android:id="@+id/btnDecimalPoint"
-       android:enabled="false"
         />
     <Button
         android:text="0"
