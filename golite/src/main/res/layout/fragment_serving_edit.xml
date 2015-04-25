@@ -132,4 +132,11 @@
         android:checked="true"
         />
 
+    <Button
+        android:id="@+id/btnDone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/abc_action_mode_done"
+    />
+
 </LinearLayout>

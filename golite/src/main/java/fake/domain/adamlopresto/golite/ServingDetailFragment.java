@@ -258,14 +258,16 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
             final Context context = getActivity();
             assert context != null;
             showEditDialog(context, "1", "serving", "", food_id, -1L);
+
             /*
-            TODO: implement this
+            //TODO: implement this
             getFragmentManager().beginTransaction()
                     .replace(R.id.serving_detail_container,
                             ServingEditFragment.newInstance(-1L, food_id))
                     .addToBackStack(null)
                     .commit();
                     */
+
             getLoaderManager().restartLoader(SERVINGS_LOADER, null, this);
             return true;
         } else {

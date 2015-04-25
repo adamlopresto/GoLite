@@ -75,6 +75,7 @@ public class ServingDetailActivity extends ActionBarActivity {
             // http://developer.android.com/design/patterns/navigation.html#up-vs-back
             //
             finish();
+            //getFragmentManager().popBackStack();
             return true;
         }
         return super.onOptionsItemSelected(item);

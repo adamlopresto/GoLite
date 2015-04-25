@@ -20,7 +20,9 @@
         android:gravity="end"
         android:inputType="numberDecimal"
         android:imeOptions="actionDone"
-        tools:ignore="UnusedAttribute"/>
+        tools:ignore="UnusedAttribute"
+        android:enabled="false"
+        />
 
     <Button
         android:text="7"

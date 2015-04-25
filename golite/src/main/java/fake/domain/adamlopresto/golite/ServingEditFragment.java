@@ -6,10 +6,13 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 /**
@@ -122,6 +125,14 @@ public class ServingEditFragment extends Fragment {
             }
         });
 
+        rootView.findViewById(R.id.btnDone).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                getFragmentManager().popBackStack();
+            }
+        });
+
         return rootView;
     }
 
@@ -157,6 +168,7 @@ public class ServingEditFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+        Toast.makeText(getActivity(), "Quitting", Toast.LENGTH_SHORT).show();
     }
 
     /**
