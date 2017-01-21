@@ -532,7 +532,7 @@ public class ServingListFragment extends ListFragment
      * @return Activity the Activity we're connected to, if any.
      */
     @NotNull
-    private Activity getContext(){
+    public Activity getContext(){
         Activity context = getActivity();
         if (context == null){
             Utils.error(null, "Activity is unexpectedly null");
@@ -540,7 +540,6 @@ public class ServingListFragment extends ListFragment
         }
         return context;
     }
-
     /**
      * Called when a menu item with {@link android.view.MenuItem#SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW}
      * is expanded.

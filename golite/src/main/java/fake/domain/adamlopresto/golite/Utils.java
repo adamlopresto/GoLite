@@ -7,15 +7,9 @@ import android.content.Intent;
 import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
+import android.webkit.URLUtil;
 import android.widget.TextView;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.params.BasicHttpParams;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -23,6 +17,10 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
@@ -70,17 +68,14 @@ public class Utils {
     }
 
     public static String getNameFromBarcode(String barcode){
-        HttpClient httpclient = new DefaultHttpClient(new BasicHttpParams());
-        HttpUriRequest httppost = new HttpPost("http://www.outpan.com/api/get-product.php?apikey=7603ebff52fde57b0825a3226329b02e&barcode="+barcode);
-        httppost.setHeader("Content-type", "application/json");
 
         InputStream inputStream = null;
         String result = null;
         try {
-            HttpResponse response = httpclient.execute(httppost);
-            HttpEntity entity = response.getEntity();
+            URL url = new URL("http://api.outpan.com/v2/products/"+barcode+"?apikey=7603ebff52fde57b0825a3226329b02e");
 
-            inputStream = entity.getContent();
+            URLConnection urlConnection = url.openConnection();
+            inputStream = urlConnection.getInputStream();
             // json is UTF-8 by default
             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"), 8);
             StringBuilder sb = new StringBuilder();
@@ -102,7 +97,11 @@ public class Utils {
 
         try {
             JSONObject jsonObject = new JSONObject(result);
-            return jsonObject.getString("name");
+            if (jsonObject.has("name"))
+                return jsonObject.getString("name");
+            else if (jsonObject.has("title"))
+                return  jsonObject.getString("title");
+            else return jsonObject.toString();
         } catch (JSONException e) {
             return e.toString();
         }

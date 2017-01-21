@@ -1,12 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 22
-    buildToolsVersion '22.0.1'
+    compileSdkVersion 25
+    buildToolsVersion '25.0.2'
 
     defaultConfig {
         minSdkVersion 15
-        targetSdkVersion 22
+        targetSdkVersion 25
         versionCode 1
         versionName "1.0"
     }
@@ -29,5 +29,5 @@ dependencies {
     // The Support Repository (separate from the corresponding library) can be found in the Extras category.
     //
     compile 'com.google.zxing:android-integration:3.1.0'
-    compile 'com.android.support:appcompat-v7:22.0.0'
+    compile 'com.android.support:appcompat-v7:25.0.0'
 }
