@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
-import android.webkit.URLUtil;
 import android.widget.TextView;
 
 import org.jetbrains.annotations.NotNull;
@@ -15,10 +14,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.DecimalFormat;
@@ -86,10 +84,10 @@ public class Utils {
                 sb.append(line).append('\n');
             }
             result = sb.toString();
+        } catch (FileNotFoundException e) {
+            return "";
         } catch (Exception e) {
-            throw new RuntimeException(e);
-            //return e.toString();
-            // Oops
+            return e.toString();
         }
         finally {
             try{if(inputStream != null)inputStream.close();}catch(Exception ignored){}
@@ -107,6 +105,7 @@ public class Utils {
         }
     }
 
+    @SuppressWarnings ("StaticMethodOnlyUsedInOneClass")
     public static double getDoubleFromTextView(@NotNull TextView textView){
         String string = textView.getText().toString();
         if (TextUtils.isEmpty(string))
