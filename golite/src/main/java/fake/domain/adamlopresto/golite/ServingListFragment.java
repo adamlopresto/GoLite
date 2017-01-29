@@ -15,6 +15,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
@@ -47,6 +48,7 @@ import java.text.NumberFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Locale;
 
 import fake.domain.adamlopresto.golite.db.DatabaseHelper;
 import fake.domain.adamlopresto.golite.db.HistoryTable;
@@ -179,14 +181,14 @@ public class ServingListFragment extends ListFragment
                 int max = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(context).getString("calories_per_day_key", "1400"));
                 int left = max-totalNum;
                 if (left < 0){
-                    total.setText(String.format("%d/%d, over by %d", totalNum, max, -left));
-                    total.setBackgroundColor(context.getResources().getColor(R.color.backgroundOverLimit));
+                    total.setText(String.format(Locale.getDefault(), "%d/%d, over by %d", totalNum, max, -left));
+                    total.setBackgroundColor(ContextCompat.getColor(context, R.color.backgroundOverLimit));
                 } else if (left == 0){
-                    total.setText(String.format("%d/%d", totalNum, max));
-                    total.setBackgroundColor(context.getResources().getColor(R.color.backgroundRoomLeft));
+                    total.setText(String.format(Locale.getDefault(), "%d/%d", totalNum, max));
+                    total.setBackgroundColor(ContextCompat.getColor(context, R.color.backgroundRoomLeft));
                 } else {
-                    total.setText(String.format("%d/%d, %d left", totalNum, max, left));
-                    total.setBackgroundColor(context.getResources().getColor(R.color.backgroundRoomLeft));
+                    total.setText(String.format(Locale.getDefault(), "%d/%d, %d left", totalNum, max, left));
+                    total.setBackgroundColor(ContextCompat.getColor(context, R.color.backgroundRoomLeft));
                 }
                 break;
             default:

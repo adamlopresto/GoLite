@@ -129,20 +129,48 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
             if (arguments != null) {
                 String foodName = arguments.getString(ARG_FOOD_NAME);
                 if (!TextUtils.isEmpty(foodName)) {
-                    foodName = Character.toUpperCase(foodName.charAt(0)) + foodName.substring(1);
-                    name.setText(foodName);
-                    createNewServing();
+                    Cursor cursor = getActivity().getContentResolver().query(GoLiteContentProvider.FOOD_URI,
+                            new String[]{FoodsTable.COLUMN_ID, FoodsTable.COLUMN_NAME},
+                            FoodsTable.COLUMN_NAME+" = ?",
+                            new String[]{foodName}, null);
+                    if (cursor != null && cursor.moveToFirst()){
+                        food_id = cursor.getLong(0);
+                        foodName = cursor.getString(1);
+                        name.setText(foodName);
+                    }
+                    if (cursor != null)
+                        cursor.close();
+
+                    if (food_id != -1L) {
+                        Bundle args = getArguments();
+                        if (args != null) {
+                            String barcode = args.getString(ARG_BARCODE);
+                            if (!TextUtils.isEmpty(barcode)) {
+                                addBarcode(barcode);
+                            }
+                        }
+                        initalizeLoaders();
+                    }
+                    else {
+                        foodName = Character.toUpperCase(foodName.charAt(0)) + foodName.substring(1);
+                        name.setText(foodName);
+                        createNewServing();
+                    }
                 }
                 //TODO: copy notes for new items
             }
         } else {
-            LoaderManager manager = getLoaderManager();
-            assert manager != null;
-            manager.initLoader(FOOD_LOADER, null, this);
-            manager.initLoader(SERVINGS_LOADER, null, this);
+            initalizeLoaders();
         }
 
         return rootView;
+    }
+
+    private void initalizeLoaders(){
+        LoaderManager manager = getLoaderManager();
+        assert manager != null;
+        manager.initLoader(FOOD_LOADER, null, this);
+        manager.initLoader(SERVINGS_LOADER, null, this);
     }
 
     @Override

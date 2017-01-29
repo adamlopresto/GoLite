@@ -1,6 +1,7 @@
 package fake.domain.adamlopresto.golite;
 
 import android.annotation.SuppressLint;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.Cursor;
@@ -10,7 +11,9 @@ import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -20,8 +23,13 @@ import android.widget.ListView;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.w3c.dom.Text;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 
 import fake.domain.adamlopresto.golite.db.BarcodesTable;
@@ -158,67 +166,109 @@ public class ServingListActivity extends ActionBarActivity
         IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
             if(scanResult!=null){
                 final String barcode = scanResult.getContents();
-                new AsyncTask<String, Void, String>() {
-                    /**
-                     * Override this method to perform a computation on a background thread. The
-                     * specified parameters are the parameters passed to {@link #execute}
-                     * by the caller of this task.
-                     * <p/>
-                     * This method can call {@link #publishProgress} to publish updates
-                     * on the UI thread.
-                     *
-                     * @param params The parameters of the task.
-                     * @return A result, defined by the subclass of this task.
-                     * @see #onPreExecute()
-                     * @see #onPostExecute
-                     * @see #publishProgress
-                     */
-                    @Override
-                    protected String doInBackground(String... params) {
-                        String barcode = params[0];
-                        if (!TextUtils.isEmpty(barcode)) {
-                            SQLiteDatabase db = DatabaseHelper.getInstance(ServingListActivity.this).getReadableDatabase();
-                            Cursor cursor = db.query(BarcodesTable.TABLE, new String[]{BarcodesTable.COLUMN_FOOD},
-                                    BarcodesTable.COLUMN_BARCODE + "=?", new String[]{barcode},
-                                    null, null, null);
-                            cursor.moveToFirst();
-                            if (!cursor.isAfterLast()) {
-                                long food_id = cursor.getLong(0);
-                                cursor.close();
-                                Intent detailIntent = new Intent(ServingListActivity.this, ServingDetailActivity.class);
-                                detailIntent.putExtra(ServingDetailFragment.ARG_ITEM_ID, food_id);
-                                startActivity(detailIntent);
-                                return null;
-                            } else {
-                                cursor.close();
-                                return Utils.getNameFromBarcode(barcode);
-                            }
-                        }
-                        return null;
-                    }
+                if (barcode != null) {
+                    new AsyncTask<String, Void, CharSequence[]>() {
+                        String barcode = null;
 
-                    /**
-                     * <p>Runs on the UI thread after {@link #doInBackground}. The
-                     * specified result is the value returned by {@link #doInBackground}.</p>
-                     * <p/>
-                     * <p>This method won't be invoked if the task was cancelled.</p>
-                     *
-                     * @param s The result of the operation computed by {@link #doInBackground}.
-                     * @see #onPreExecute
-                     * @see #doInBackground
-                     * @see #onCancelled(Object)
-                     */
-                    @Override
-                    protected void onPostExecute(String s) {
-                        if (s != null) {
-                            Intent detailIntent = new Intent(ServingListActivity.this, ServingDetailActivity.class);
-                            if (!"null".equals(s))
-                                detailIntent.putExtra(ServingDetailFragment.ARG_FOOD_NAME, s);
-                            detailIntent.putExtra(ServingDetailFragment.ARG_BARCODE, barcode);
-                            startActivity(detailIntent);
+                        /**
+                         * Override this method to perform a computation on a background thread. The
+                         * specified parameters are the parameters passed to {@link #execute}
+                         * by the caller of this task.
+                         * <p/>
+                         * This method can call {@link #publishProgress} to publish updates
+                         * on the UI thread.
+                         *
+                         * @param params The parameters of the task.
+                         * @return A result, defined by the subclass of this task.
+                         * @see #onPreExecute()
+                         * @see #onPostExecute
+                         * @see #publishProgress
+                         */
+                        @Override
+                        protected CharSequence[] doInBackground(String... params) {
+                            barcode = params[0];
+                            if (!TextUtils.isEmpty(barcode)) {
+                                SQLiteDatabase db = DatabaseHelper.getInstance(ServingListActivity.this).getReadableDatabase();
+                                Cursor cursor = db.query(BarcodesTable.TABLE, new String[]{BarcodesTable.COLUMN_FOOD},
+                                        BarcodesTable.COLUMN_BARCODE + "=?", new String[]{barcode},
+                                        null, null, null);
+                                cursor.moveToFirst();
+                                if (!cursor.isAfterLast()) {
+                                    long food_id = cursor.getLong(0);
+                                    cursor.close();
+                                    Intent detailIntent = new Intent(ServingListActivity.this, ServingDetailActivity.class);
+                                    detailIntent.putExtra(ServingDetailFragment.ARG_ITEM_ID, food_id);
+                                    startActivity(detailIntent);
+                                    return null;
+                                } else {
+                                    cursor.close();
+                                    Intent detailIntent = new Intent(ServingListActivity.this, ServingDetailActivity.class);
+                                    detailIntent.putExtra(ServingDetailFragment.ARG_BARCODE, barcode);
+                                    JSONObject obj = Utils.getDetailsFromBarcode(barcode);
+                                    if (obj == null) {
+                                        startActivity(detailIntent);
+                                        return null;
+                                    }
+                                    ArrayList<String> ls = new ArrayList<String>();
+                                    String brand = null;
+                                    JSONObject attr = obj.optJSONObject("attributes");
+                                    if (attr != null)
+                                        brand = attr.optString("Brand");
+                                    if (!TextUtils.isEmpty(brand))
+                                        brand += " ";
+                                    add(ls, obj.optString("name"), brand);
+                                    add(ls, obj.optString("title"), brand);
+                                    String[] opts = new String[ls.size()];
+                                    ls.toArray(opts);
+                                    return opts;
+                                }
+                            }
+                            return null;
                         }
-                    }
-                }.execute(barcode);
+
+                        @Override
+                        protected void onPostExecute(final CharSequence[] charSequences) {
+                            final Intent detailIntent = new Intent(ServingListActivity.this, ServingDetailActivity.class);
+                            detailIntent.putExtra(ServingDetailFragment.ARG_BARCODE, barcode);
+                            if (charSequences == null) {
+                                return;
+                            }
+
+                            if (charSequences.length == 1){
+                                CharSequence name = charSequences[0];
+                                if (!TextUtils.isEmpty(name) && !name.equals("null"))
+                                    detailIntent.putExtra(ServingDetailFragment.ARG_FOOD_NAME,
+                                            charSequences[0]);
+                                startActivity(detailIntent);
+                                return;
+                            }
+
+                            AlertDialog.Builder builder = new AlertDialog.Builder(ServingListActivity.this);
+                            builder.setItems(charSequences, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    detailIntent.putExtra(ServingDetailFragment.ARG_FOOD_NAME,
+                                            charSequences[i]);
+                                    startActivity(detailIntent);
+                                }
+                            });
+                            builder.setCancelable(true);
+                            builder.show();
+                        }
+
+                        private void add(ArrayList<String> ls, String title, String brand) {
+                            if (TextUtils.isEmpty(title))
+                                return;
+                            ls.add(title);
+                            int index = title.indexOf(',');
+                            if (index != -1)
+                                ls.add(title.substring(0, index));
+                            if (!TextUtils.isEmpty(brand) && title.startsWith(brand))
+                                add(ls, title.substring(brand.length()), null);
+                        }
+
+                    }.execute(barcode);
+                }
             }
     }
 

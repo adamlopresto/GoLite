@@ -65,7 +65,7 @@ public class Utils {
         return seq.toString();
     }
 
-    public static String getNameFromBarcode(String barcode){
+    public static JSONObject getDetailsFromBarcode(String barcode){
 
         InputStream inputStream = null;
         String result = null;
@@ -84,24 +84,17 @@ public class Utils {
                 sb.append(line).append('\n');
             }
             result = sb.toString();
-        } catch (FileNotFoundException e) {
-            return "";
         } catch (Exception e) {
-            return e.toString();
+            return null;
         }
         finally {
             try{if(inputStream != null)inputStream.close();}catch(Exception ignored){}
         }
 
         try {
-            JSONObject jsonObject = new JSONObject(result);
-            if (jsonObject.has("name"))
-                return jsonObject.getString("name");
-            else if (jsonObject.has("title"))
-                return  jsonObject.getString("title");
-            else return jsonObject.toString();
+            return new JSONObject(result);
         } catch (JSONException e) {
-            return e.toString();
+            return null;
         }
     }
 
