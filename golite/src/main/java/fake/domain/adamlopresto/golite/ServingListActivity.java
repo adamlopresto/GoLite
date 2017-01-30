@@ -13,7 +13,6 @@ import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -23,9 +22,7 @@ import android.widget.ListView;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
-import org.json.JSONException;
 import org.json.JSONObject;
-import org.w3c.dom.Text;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -209,7 +206,7 @@ public class ServingListActivity extends ActionBarActivity
                                         startActivity(detailIntent);
                                         return null;
                                     }
-                                    ArrayList<String> ls = new ArrayList<String>();
+                                    ArrayList<String> ls = new ArrayList<>();
                                     String brand = null;
                                     JSONObject attr = obj.optJSONObject("attributes");
                                     if (attr != null)
@@ -236,7 +233,7 @@ public class ServingListActivity extends ActionBarActivity
 
                             if (charSequences.length == 1){
                                 CharSequence name = charSequences[0];
-                                if (!TextUtils.isEmpty(name) && !name.equals("null"))
+                                if (!TextUtils.isEmpty(name) && !"null".equals(name))
                                     detailIntent.putExtra(ServingDetailFragment.ARG_FOOD_NAME,
                                             charSequences[0]);
                                 startActivity(detailIntent);
