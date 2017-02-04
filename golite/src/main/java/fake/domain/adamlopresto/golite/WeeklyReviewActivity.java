@@ -77,12 +77,10 @@ public class WeeklyReviewActivity extends ActionBarActivity {
             String today = DatabaseHelper.DATE_FORMAT.format(calendar.getTime());
             int day = calendar.get(Calendar.DAY_OF_WEEK);
             int offset;
-            switch(day) {
-                case Calendar.SATURDAY:
-                    offset = 1;
-                    break;
-                default:
-                    offset = day + 1;
+            if (day == Calendar.SATURDAY) {
+                offset = 1;
+            } else {
+                offset = day + 1;
             }
             calendar.add(Calendar.DATE, -offset);
             String lastFriday = DatabaseHelper.DATE_FORMAT.format(calendar.getTime());
