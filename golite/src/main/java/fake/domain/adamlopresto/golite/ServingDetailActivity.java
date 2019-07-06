@@ -2,7 +2,7 @@ package fake.domain.adamlopresto.golite;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 
 import com.google.zxing.integration.android.IntentIntegrator;
@@ -18,7 +18,7 @@ import com.google.zxing.integration.android.IntentResult;
  * more than a {@link ServingDetailFragment}.
  */
 @SuppressWarnings("WeakerAccess")
-public class ServingDetailActivity extends ActionBarActivity {
+public class ServingDetailActivity extends AppCompatActivity {
 
     private ServingDetailFragment fragment;
 

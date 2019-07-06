@@ -18,8 +18,8 @@ import android.preference.PreferenceManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.text.TextUtils;
 import android.util.SparseBooleanArray;
@@ -320,7 +320,7 @@ public class ServingListFragment extends ListFragment
 
         mCallbacks = (Callbacks) activity;
 
-        ActionBar actionBar = ((ActionBarActivity)activity).getSupportActionBar();
+        ActionBar actionBar = ((AppCompatActivity)activity).getSupportActionBar();
         if (actionBar == null){
             Utils.error(getContext(), "Null ActionBar");
             return;

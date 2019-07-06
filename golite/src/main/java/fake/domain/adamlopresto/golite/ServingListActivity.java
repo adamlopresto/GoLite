@@ -9,9 +9,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
@@ -49,7 +49,7 @@ import fake.domain.adamlopresto.golite.db.DatabaseHelper;
  * {@link ServingListFragment.Callbacks} interface
  * to listen for item selections.
  */
-public class ServingListActivity extends ActionBarActivity
+public class ServingListActivity extends AppCompatActivity
         implements ServingListFragment.Callbacks {
 
     /**

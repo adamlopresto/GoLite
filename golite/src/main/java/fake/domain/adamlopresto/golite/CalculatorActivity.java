@@ -4,7 +4,7 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -15,7 +15,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 
-public class CalculatorActivity extends ActionBarActivity {
+public class CalculatorActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
