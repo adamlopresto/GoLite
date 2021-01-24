@@ -15,12 +15,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.view.MenuItemCompat;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.SearchView;
 import android.text.TextUtils;
 import android.util.SparseBooleanArray;
 import android.view.ActionMode;
@@ -38,6 +32,13 @@ import android.widget.ListView;
 import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
+import androidx.core.content.ContextCompat;
+import androidx.core.view.MenuItemCompat;
 
 import com.google.zxing.integration.android.IntentIntegrator;
 
@@ -69,7 +70,7 @@ import fake.domain.adamlopresto.golite.db.TotalsView;
 @SuppressWarnings("WeakerAccess")
 public class ServingListFragment extends ListFragment
         implements LoaderManager.LoaderCallbacks<Cursor>,
-        MenuItemCompat.OnActionExpandListener {
+        MenuItem.OnActionExpandListener {
 
     /**
      * The serialization (saved instance state) Bundle key representing the
@@ -401,15 +402,14 @@ public class ServingListFragment extends ListFragment
         }
     }
 
-    @SuppressWarnings("ConstantConditions")
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         try {
             inflater.inflate(R.menu.main_menu, menu);
             searchItem = menu.findItem(R.id.search);
-            MenuItemCompat.setOnActionExpandListener(searchItem, this);
+            searchItem.setOnActionExpandListener(this);
             SearchManager searchManager = (SearchManager)getActivity().getSystemService(Context.SEARCH_SERVICE);
-            SearchView searchView = (SearchView)MenuItemCompat.getActionView(searchItem);
+            SearchView searchView = (SearchView)searchItem.getActionView();
             searchView.setSearchableInfo(searchManager.getSearchableInfo(getActivity().getComponentName()));
             searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener(){
                 @Override

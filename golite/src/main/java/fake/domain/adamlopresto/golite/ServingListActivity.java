@@ -8,16 +8,17 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
@@ -96,7 +97,7 @@ public class ServingListActivity extends AppCompatActivity
         drawerList.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_1,
                 dateChoices));
 
-        final DrawerLayout drawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
+        final DrawerLayout drawerLayout = findViewById(R.id.drawer_layout);
 
         drawerList.setOnItemClickListener(
                 new AdapterView.OnItemClickListener() {
@@ -160,113 +161,114 @@ public class ServingListActivity extends AppCompatActivity
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        super.onActivityResult(requestCode, resultCode, intent);
         IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
-            if(scanResult!=null){
-                final String barcode = scanResult.getContents();
-                if (barcode != null) {
-                    new AsyncTask<String, Void, CharSequence[]>() {
-                        String barcode = null;
+        if (scanResult != null) {
+            final String barcode = scanResult.getContents();
+            if (barcode != null) {
+                new AsyncTask<String, Void, CharSequence[]>() {
+                    String barcode = null;
 
-                        /**
-                         * Override this method to perform a computation on a background thread. The
-                         * specified parameters are the parameters passed to {@link #execute}
-                         * by the caller of this task.
-                         * <p/>
-                         * This method can call {@link #publishProgress} to publish updates
-                         * on the UI thread.
-                         *
-                         * @param params The parameters of the task.
-                         * @return A result, defined by the subclass of this task.
-                         * @see #onPreExecute()
-                         * @see #onPostExecute
-                         * @see #publishProgress
-                         */
-                        @Override
-                        protected CharSequence[] doInBackground(String... params) {
-                            barcode = params[0];
-                            if (!TextUtils.isEmpty(barcode)) {
-                                SQLiteDatabase db = DatabaseHelper.getInstance(ServingListActivity.this).getReadableDatabase();
-                                Cursor cursor = db.query(BarcodesTable.TABLE, new String[]{BarcodesTable.COLUMN_FOOD},
-                                        BarcodesTable.COLUMN_BARCODE + "=?", new String[]{barcode},
-                                        null, null, null);
-                                cursor.moveToFirst();
-                                if (!cursor.isAfterLast()) {
-                                    long food_id = cursor.getLong(0);
-                                    cursor.close();
-                                    Intent detailIntent = new Intent(ServingListActivity.this, ServingDetailActivity.class);
-                                    detailIntent.putExtra(ServingDetailFragment.ARG_ITEM_ID, food_id);
+                    /**
+                     * Override this method to perform a computation on a background thread. The
+                     * specified parameters are the parameters passed to {@link #execute}
+                     * by the caller of this task.
+                     * <p/>
+                     * This method can call {@link #publishProgress} to publish updates
+                     * on the UI thread.
+                     *
+                     * @param params The parameters of the task.
+                     * @return A result, defined by the subclass of this task.
+                     * @see #onPreExecute()
+                     * @see #onPostExecute
+                     * @see #publishProgress
+                     */
+                    @Override
+                    protected CharSequence[] doInBackground(String... params) {
+                        barcode = params[0];
+                        if (!TextUtils.isEmpty(barcode)) {
+                            SQLiteDatabase db = DatabaseHelper.getInstance(ServingListActivity.this).getReadableDatabase();
+                            Cursor cursor = db.query(BarcodesTable.TABLE, new String[]{BarcodesTable.COLUMN_FOOD},
+                                    BarcodesTable.COLUMN_BARCODE + "=?", new String[]{barcode},
+                                    null, null, null);
+                            cursor.moveToFirst();
+                            if (!cursor.isAfterLast()) {
+                                long food_id = cursor.getLong(0);
+                                cursor.close();
+                                Intent detailIntent = new Intent(ServingListActivity.this, ServingDetailActivity.class);
+                                detailIntent.putExtra(ServingDetailFragment.ARG_ITEM_ID, food_id);
+                                startActivity(detailIntent);
+                                return null;
+                            } else {
+                                cursor.close();
+                                Intent detailIntent = new Intent(ServingListActivity.this, ServingDetailActivity.class);
+                                detailIntent.putExtra(ServingDetailFragment.ARG_BARCODE, barcode);
+                                JSONObject obj = Utils.getDetailsFromBarcode(barcode);
+                                if (obj == null) {
                                     startActivity(detailIntent);
                                     return null;
-                                } else {
-                                    cursor.close();
-                                    Intent detailIntent = new Intent(ServingListActivity.this, ServingDetailActivity.class);
-                                    detailIntent.putExtra(ServingDetailFragment.ARG_BARCODE, barcode);
-                                    JSONObject obj = Utils.getDetailsFromBarcode(barcode);
-                                    if (obj == null) {
-                                        startActivity(detailIntent);
-                                        return null;
-                                    }
-                                    ArrayList<String> ls = new ArrayList<>();
-                                    String brand = null;
-                                    JSONObject attr = obj.optJSONObject("attributes");
-                                    if (attr != null)
-                                        brand = attr.optString("Brand");
-                                    if (!TextUtils.isEmpty(brand))
-                                        brand += " ";
-                                    add(ls, obj.optString("name"), brand);
-                                    add(ls, obj.optString("title"), brand);
-                                    String[] opts = new String[ls.size()];
-                                    ls.toArray(opts);
-                                    return opts;
                                 }
+                                ArrayList<String> ls = new ArrayList<>();
+                                String brand = null;
+                                JSONObject attr = obj.optJSONObject("attributes");
+                                if (attr != null)
+                                    brand = attr.optString("Brand");
+                                if (!TextUtils.isEmpty(brand))
+                                    brand += " ";
+                                add(ls, obj.optString("name"), brand);
+                                add(ls, obj.optString("title"), brand);
+                                String[] opts = new String[ls.size()];
+                                ls.toArray(opts);
+                                return opts;
                             }
-                            return null;
+                        }
+                        return null;
+                    }
+
+                    @Override
+                    protected void onPostExecute(final CharSequence[] charSequences) {
+                        final Intent detailIntent = new Intent(ServingListActivity.this, ServingDetailActivity.class);
+                        detailIntent.putExtra(ServingDetailFragment.ARG_BARCODE, barcode);
+                        if (charSequences == null) {
+                            return;
                         }
 
-                        @Override
-                        protected void onPostExecute(final CharSequence[] charSequences) {
-                            final Intent detailIntent = new Intent(ServingListActivity.this, ServingDetailActivity.class);
-                            detailIntent.putExtra(ServingDetailFragment.ARG_BARCODE, barcode);
-                            if (charSequences == null) {
-                                return;
-                            }
+                        if (charSequences.length == 1) {
+                            CharSequence name = charSequences[0];
+                            if (!TextUtils.isEmpty(name) && !"null".equals(name))
+                                detailIntent.putExtra(ServingDetailFragment.ARG_FOOD_NAME,
+                                        charSequences[0]);
+                            startActivity(detailIntent);
+                            return;
+                        }
 
-                            if (charSequences.length == 1){
-                                CharSequence name = charSequences[0];
-                                if (!TextUtils.isEmpty(name) && !"null".equals(name))
-                                    detailIntent.putExtra(ServingDetailFragment.ARG_FOOD_NAME,
-                                            charSequences[0]);
+                        AlertDialog.Builder builder = new AlertDialog.Builder(ServingListActivity.this);
+                        builder.setItems(charSequences, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                detailIntent.putExtra(ServingDetailFragment.ARG_FOOD_NAME,
+                                        charSequences[i]);
                                 startActivity(detailIntent);
-                                return;
                             }
+                        });
+                        builder.setCancelable(true);
+                        builder.show();
+                    }
 
-                            AlertDialog.Builder builder = new AlertDialog.Builder(ServingListActivity.this);
-                            builder.setItems(charSequences, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface, int i) {
-                                    detailIntent.putExtra(ServingDetailFragment.ARG_FOOD_NAME,
-                                            charSequences[i]);
-                                    startActivity(detailIntent);
-                                }
-                            });
-                            builder.setCancelable(true);
-                            builder.show();
-                        }
+                    private void add(ArrayList<String> ls, String title, String brand) {
+                        if (TextUtils.isEmpty(title))
+                            return;
+                        ls.add(title);
+                        int index = title.indexOf(',');
+                        if (index != -1)
+                            ls.add(title.substring(0, index));
+                        if (!TextUtils.isEmpty(brand) && title.startsWith(brand))
+                            add(ls, title.substring(brand.length()), null);
+                    }
 
-                        private void add(ArrayList<String> ls, String title, String brand) {
-                            if (TextUtils.isEmpty(title))
-                                return;
-                            ls.add(title);
-                            int index = title.indexOf(',');
-                            if (index != -1)
-                                ls.add(title.substring(0, index));
-                            if (!TextUtils.isEmpty(brand) && title.startsWith(brand))
-                                add(ls, title.substring(brand.length()), null);
-                        }
-
-                    }.execute(barcode);
-                }
+                }.execute(barcode);
             }
+        }
     }
 
     @Override

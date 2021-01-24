@@ -1,12 +1,11 @@
 package fake.domain.adamlopresto.golite;
 
+
 import android.annotation.SuppressLint;
-import android.app.Fragment;
 import android.content.ContentResolver;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -14,6 +13,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TableLayout;
 import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -25,14 +28,14 @@ import fake.domain.adamlopresto.golite.db.DatabaseHelper;
 import fake.domain.adamlopresto.golite.db.TotalsView;
 
 
-public class WeeklyReviewActivity extends AppCompatActivity {
+public class WeeklyReviewActivity extends FragmentActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_weekly_review);
         if (savedInstanceState == null) {
-            getFragmentManager().beginTransaction()
+            getSupportFragmentManager().beginTransaction()
                     .add(R.id.container, new WeeklyReviewFragment())
                     .commit();
         }
@@ -93,7 +96,7 @@ public class WeeklyReviewActivity extends AppCompatActivity {
             int total = 0;
             int totalDiff = 0;
             int max = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(getActivity()).getString("calories_per_day_key", "1400"));
-            @SuppressLint ("SimpleDateFormat") DateFormat dayOfWeekFormat = new SimpleDateFormat("EEEE");
+            @SuppressLint("SimpleDateFormat") DateFormat dayOfWeekFormat = new SimpleDateFormat("EEEE");
             while (!cursor.isAfterLast()){
                 String dateAsString = cursor.getString(0);
                 if (today.equals(dateAsString)){
@@ -126,7 +129,7 @@ public class WeeklyReviewActivity extends AppCompatActivity {
 
         private static void addRow(ViewGroup rootView, LayoutInflater inflater, CharSequence day, int calories, int overUnder){
             View row = inflater.inflate(R.layout.weekly_review_row, rootView, false);
-            TextView dayView = ((TextView)row.findViewById(R.id.day));
+            TextView dayView = row.findViewById(R.id.day);
             dayView.setText(day);
 
             TextView caloriesView = (TextView)row.findViewById(R.id.calories);

@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -13,6 +12,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 
 public class CalculatorActivity extends AppCompatActivity {
@@ -59,7 +60,7 @@ public class CalculatorActivity extends AppCompatActivity {
         private EditText number;
 
         //curNum is the number we're currently typing.
-        private StringBuffer curNum = new StringBuffer(32);
+        private final StringBuffer curNum = new StringBuffer(32);
 
         private double runningTotal = 0;
         private char operator;
@@ -83,8 +84,8 @@ public class CalculatorActivity extends AppCompatActivity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_calculator, container, false);
-            number = (EditText)rootView.findViewById(R.id.result);
-            doneButton = (TextView)rootView.findViewById(R.id.done);
+            number = rootView.findViewById(R.id.result);
+            doneButton = rootView.findViewById(R.id.done);
             doneButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

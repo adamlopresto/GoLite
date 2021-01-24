@@ -11,7 +11,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
-import android.support.annotation.NonNull;
+
+import androidx.annotation.NonNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -302,7 +303,7 @@ public class GoLiteContentProvider extends ContentProvider {
         return DatabaseUtils.concatenateWhere(original, newSelection);
     }
 
-    private static String[] appendSelectionArgs(String originalValues[], String newValues[]) {
+    private static String[] appendSelectionArgs(String[] originalValues, String[] newValues) {
         if (originalValues == null) {
             return newValues;
         }
