@@ -1,16 +1,12 @@
 package fake.domain.adamlopresto.golite;
 
-import android.app.Activity;
+
 import android.app.DatePickerDialog;
-import android.app.ListFragment;
-import android.app.LoaderManager;
 import android.app.SearchManager;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.CursorLoader;
 import android.content.Intent;
-import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -29,16 +25,17 @@ import android.widget.AdapterView;
 import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.ListView;
-import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.core.content.ContextCompat;
-import androidx.core.view.MenuItemCompat;
+import androidx.cursoradapter.widget.ResourceCursorAdapter;
+import androidx.fragment.app.ListFragment;
+import androidx.loader.app.LoaderManager;
+import androidx.loader.content.CursorLoader;
+import androidx.loader.content.Loader;
 
 import com.google.zxing.integration.android.IntentIntegrator;
 
@@ -144,7 +141,7 @@ public class ServingListFragment extends ListFragment
                     selectionArgs = new String[]{activeDate};
                 }
 
-                return new CursorLoader(getActivity(), uri,
+                return new CursorLoader(requireContext(), uri,
                         new String[]{ServingsView.COLUMN_ID,
                                 ServingsView.COLUMN_NAME,
                                 ServingsView.COLUMN_NUMBER,
@@ -156,7 +153,7 @@ public class ServingListFragment extends ListFragment
                         },
                         selection, selectionArgs, ServingsView.COLUMN_NAME);
             case TOTALS_ID:
-                return new CursorLoader(getActivity(), GoLiteContentProvider.DAILY_TOTAL_URI,
+                return new CursorLoader(requireContext(), GoLiteContentProvider.DAILY_TOTAL_URI,
                         new String[]{TotalsView.COLUMN_TOTAL},
                         "date = ?", new String[]{activeDate},
                         null
@@ -177,7 +174,7 @@ public class ServingListFragment extends ListFragment
                 if (data.moveToFirst())
                     totalNum = data.getInt(0);
 
-                Context context = getActivity();
+                Context context = getContext();
                 assert context != null;
                 int max = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(context).getString("calories_per_day_key", "1400"));
                 int left = max-totalNum;
@@ -224,7 +221,7 @@ public class ServingListFragment extends ListFragment
         setHasOptionsMenu(true);
         ListView lv = getListView();
         if (lv == null){
-            Utils.error(getActivity(), "Null list view");
+            Utils.error(requireContext(), "Null list view");
             return;
         }
         lv.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
@@ -237,7 +234,7 @@ public class ServingListFragment extends ListFragment
 
             @Override
             public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-                getContext().getMenuInflater().inflate(R.menu.cab_delete, menu);
+                requireActivity().getMenuInflater().inflate(R.menu.cab_delete, menu);
                 editItem = menu.findItem(R.id.edit);
 
                 return true;
@@ -258,7 +255,7 @@ public class ServingListFragment extends ListFragment
                         ListView listView = getListView();
                         assert listView != null;
 
-                        ContentResolver resolver = getContext().getContentResolver();
+                        ContentResolver resolver = requireContext().getContentResolver();
                         ContentValues cv = new ContentValues(1);
                         cv.put(ServingsTable.COLUMN_LISTED, false);
 
@@ -305,81 +302,16 @@ public class ServingListFragment extends ListFragment
     }
 
     @Override
-    public void onAttach(@NotNull final Activity activity) {
-        super.onAttach(activity);
+    public void onAttach(@NotNull final Context context) {
+        super.onAttach(context);
 
-        // Activities containing this fragment must implement its callbacks.
-        if (!(activity instanceof Callbacks)) {
-            throw new IllegalStateException("Activity must implement fragment's callbacks.");
-        }
-
-        setListAdapter(adapter = new ServingsViewAdapter(activity));
+        setListAdapter(adapter = new ServingsViewAdapter(context));
 
         //noinspection ConstantConditions
-        getLoaderManager().initLoader(SERVINGS_ID, null, this);
-        getLoaderManager().initLoader(TOTALS_ID, null, this);
+        LoaderManager.getInstance(this).initLoader(SERVINGS_ID, null, this);
+        LoaderManager.getInstance(this).initLoader(TOTALS_ID, null, this);
 
-        mCallbacks = (Callbacks) activity;
-
-        ActionBar actionBar = ((AppCompatActivity)activity).getSupportActionBar();
-        if (actionBar == null){
-            Utils.error(getContext(), "Null ActionBar");
-            return;
-        }
-        //actionBar.setDisplayShowTitleEnabled(false);
-        /*
-
-        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
-
-        Context themedContext = actionBar.getThemedContext();
-        if (themedContext == null)
-            themedContext = activity;
-
-        SpinnerAdapter adapter = new ArrayAdapter<>(themedContext,
-                android.R.layout.simple_list_item_1, android.R.id.text1, new String[]{
-                "All", "Today", "Yesterday", "Other date"
-        });
-
-        actionBar.setListNavigationCallbacks(adapter, new ActionBar.OnNavigationListener() {
-            @Override
-            public boolean onNavigationItemSelected(int itemPosition, long itemId) {
-                Calendar cal = new GregorianCalendar();
-                switch (itemPosition){
-                    case 0: //All
-                        activeDate = DatabaseHelper.DATE_FORMAT.format(cal.getTime());
-                        showAll = true;
-                        break;
-                    case 2: //Yesterday
-                        cal.add(GregorianCalendar.DAY_OF_MONTH, -1);
-                        // fall through
-                    case 1: //Today
-                        activeDate = DatabaseHelper.DATE_FORMAT.format(cal.getTime());
-                        showAll = false;
-                        break;
-                    case 3: //other date
-                        DatePickerDialog dlg = new DatePickerDialog(activity,
-                                new DatePickerDialog.OnDateSetListener() {
-                                    @Override
-                                    public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-                                        Calendar cal = new GregorianCalendar(year, monthOfYear, dayOfMonth);
-                                        activeDate = DatabaseHelper.DATE_FORMAT.format(cal.getTime());
-                                        showAll = false;
-                                        restartLoaders(true);
-                                    }
-                                }, cal.get(Calendar.YEAR),
-                                cal.get(Calendar.MONTH),
-                                cal.get(Calendar.DAY_OF_MONTH));
-                        dlg.show();
-                        return true;
-                    default:
-                        Utils.error(activity, "Unexpected dropdown item, position "+itemPosition+", id "+itemId);
-                        return false;
-                }
-                restartLoaders(true);
-                return true;
-            }
-        });
-        */
+        mCallbacks = (Callbacks) context;
     }
 
     @Override
@@ -389,7 +321,7 @@ public class ServingListFragment extends ListFragment
             searchItem.collapseActionView();
         }
         query = null;
-        getContext().getContentResolver().delete(GoLiteContentProvider.DELETE_INVALID_URI, null, null);
+        requireContext().getContentResolver().delete(GoLiteContentProvider.DELETE_INVALID_URI, null, null);
         restartLoaders(true);
     }
 
@@ -408,13 +340,13 @@ public class ServingListFragment extends ListFragment
             inflater.inflate(R.menu.main_menu, menu);
             searchItem = menu.findItem(R.id.search);
             searchItem.setOnActionExpandListener(this);
-            SearchManager searchManager = (SearchManager)getActivity().getSystemService(Context.SEARCH_SERVICE);
+            SearchManager searchManager = (SearchManager)requireContext().getSystemService(Context.SEARCH_SERVICE);
             SearchView searchView = (SearchView)searchItem.getActionView();
-            searchView.setSearchableInfo(searchManager.getSearchableInfo(getActivity().getComponentName()));
+            searchView.setSearchableInfo(searchManager.getSearchableInfo(requireActivity().getComponentName()));
             searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener(){
                 @Override
                 public boolean onQueryTextSubmit(String query) {
-                    Toast.makeText(getContext(), "Searching for: " + query + "...", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), "Searching for: " + query + "...", Toast.LENGTH_SHORT).show();
                     ServingListFragment.this.query = query;
                     return false;
                 }
@@ -435,7 +367,7 @@ public class ServingListFragment extends ListFragment
             scanItem = menu.findItem(R.id.menu_scan);
             newItem = menu.findItem(R.id.menu_new);
         } catch (Exception e){
-            Utils.error(getContext(), e);
+            Utils.error(requireContext(), e);
         }
     }
 
@@ -443,20 +375,20 @@ public class ServingListFragment extends ListFragment
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case R.id.menu_new: {
-                Intent intent = new Intent(getActivity(), ServingDetailActivity.class);
+                Intent intent = new Intent(requireContext(), ServingDetailActivity.class);
                 if (!TextUtils.isEmpty(query))
                     intent.putExtra(ServingDetailFragment.ARG_FOOD_NAME, query);
                 startActivity(intent);
                 return true;
             }
             case R.id.settings:
-                startActivity(new Intent(getActivity(), SettingsActivity.class));
+                startActivity(new Intent(requireContext(), SettingsActivity.class));
                 return true;
             case R.id.weekly_review:
-                startActivity(new Intent(getActivity(), WeeklyReviewActivity.class));
+                startActivity(new Intent(requireContext(), WeeklyReviewActivity.class));
                 return true;
             case R.id.menu_scan:
-                IntentIntegrator integrator = new IntentIntegrator(getActivity());
+                IntentIntegrator integrator = new IntentIntegrator(requireActivity());
                 integrator.initiateScan();
                 return true;
             default:
@@ -473,7 +405,7 @@ public class ServingListFragment extends ListFragment
     }
 
     @Override
-    public void onListItemClick(ListView listView, View view, int position, long id) {
+    public void onListItemClick(@NotNull ListView listView, @NotNull View view, int position, long id) {
         super.onListItemClick(listView, view, position, id);
 
         editItem(position);
@@ -494,7 +426,7 @@ public class ServingListFragment extends ListFragment
 
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(@NotNull Bundle outState) {
         super.onSaveInstanceState(outState);
         if (mActivatedPosition != ListView.INVALID_POSITION) {
             // Serialize and persist the activated item position.
@@ -509,7 +441,6 @@ public class ServingListFragment extends ListFragment
     public void setActivateOnItemClick(boolean activateOnItemClick) {
         // When setting CHOICE_MODE_SINGLE, ListView will automatically
         // give items the 'activated' state when touched.
-        //noinspection ConstantConditions
         getListView().setChoiceMode(activateOnItemClick
                 ? ListView.CHOICE_MODE_SINGLE
                 : ListView.CHOICE_MODE_NONE);
@@ -517,31 +448,14 @@ public class ServingListFragment extends ListFragment
 
     private void setActivatedPosition(int position) {
         if (position == ListView.INVALID_POSITION) {
-            //noinspection ConstantConditions
             getListView().setItemChecked(mActivatedPosition, false);
         } else {
-            //noinspection ConstantConditions
             getListView().setItemChecked(position, true);
         }
 
         mActivatedPosition = position;
     }
 
-
-    /**
-     * Gets the current activity to use as a Context, or throws an exception.
-     * Guaranteed not to return null, to centralize error handling.
-     * @return Activity the Activity we're connected to, if any.
-     */
-    @NotNull
-    public Activity getContext(){
-        Activity context = getActivity();
-        if (context == null){
-            Utils.error(null, "Activity is unexpectedly null");
-            throw new AssertionError("Null context");
-        }
-        return context;
-    }
     /**
      * Called when a menu item with {@link android.view.MenuItem#SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW}
      * is expanded.
@@ -597,7 +511,7 @@ public class ServingListFragment extends ListFragment
                 showAll = false;
                 break;
             case 9: //other date
-                DatePickerDialog dlg = new DatePickerDialog(getActivity(),
+                DatePickerDialog dlg = new DatePickerDialog(requireContext(),
                         new DatePickerDialog.OnDateSetListener() {
                             @Override
                             public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
@@ -612,7 +526,7 @@ public class ServingListFragment extends ListFragment
                 dlg.show();
                 break;
             default:
-                Utils.error(getActivity(), "Unexpected dropdown item, position "+itemPosition);
+                Utils.error(requireContext(), "Unexpected dropdown item, position "+itemPosition);
         }
         restartLoaders(true);
     }
@@ -626,7 +540,7 @@ public class ServingListFragment extends ListFragment
         /**
          * Callback for when an item has been selected.
          */
-        public void onItemSelected(long id);
+        void onItemSelected(long id);
     }
 
     private static class ViewHolder implements View.OnClickListener {
@@ -653,12 +567,10 @@ public class ServingListFragment extends ListFragment
                 cv.put(HistoryTable.COLUMN_SERVING, serving_id);
                 cv.put(HistoryTable.COLUMN_QUANTITY, 1);
                 cv.put(HistoryTable.COLUMN_DATE, activeDate);
-                //noinspection ConstantConditions
                 Uri newUri = v.getContext().getContentResolver().insert(GoLiteContentProvider.HISTORY_URI, cv);
                 assert newUri != null;
-                history_id = Long.valueOf(newUri.getLastPathSegment());
+                history_id = Long.parseLong(newUri.getLastPathSegment());
             } else {
-                //noinspection ConstantConditions
                 v.getContext().getContentResolver().delete(GoLiteContentProvider.HISTORY_URI,
                         HistoryTable.COLUMN_ID + "=?", DatabaseHelper.idToArgs(history_id));
 
@@ -702,10 +614,10 @@ public class ServingListFragment extends ListFragment
             View v = super.newView(context, cursor, parent);
             assert v != null;
             ViewHolder holder = new ViewHolder();
-            holder.nameView = (CheckBox) v.findViewById(R.id.name);
-            holder.numberView = (TextView) v.findViewById(R.id.number);
-            holder.unitView = (TextView) v.findViewById(R.id.units);
-            holder.calView = (TextView) v.findViewById(R.id.calories);
+            holder.nameView = v.findViewById(R.id.name);
+            holder.numberView = v.findViewById(R.id.number);
+            holder.unitView = v.findViewById(R.id.units);
+            holder.calView = v.findViewById(R.id.calories);
 
             holder.nameView.setOnClickListener(holder);
             v.setTag(holder);

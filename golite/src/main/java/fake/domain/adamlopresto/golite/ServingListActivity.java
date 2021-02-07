@@ -15,6 +15,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -23,6 +24,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
 import java.text.DateFormat;
@@ -75,13 +77,13 @@ public class ServingListActivity extends AppCompatActivity
             // In two-pane mode, list items should be given the
             // 'activated' state when touched.
             //noinspection ConstantConditions
-            ((ServingListFragment) getFragmentManager()
+            ((ServingListFragment) getSupportFragmentManager()
                     .findFragmentById(R.id.serving_list))
                     .setActivateOnItemClick(true);
         }
 
         final ListView drawerList;
-        drawerList = (ListView) findViewById(R.id.left_drawer);
+        drawerList = findViewById(R.id.left_drawer);
         String[] dateChoices = new String[10];
         dateChoices[0] = "All";
         dateChoices[1] = "Today";
@@ -105,7 +107,7 @@ public class ServingListActivity extends AppCompatActivity
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                         drawerLayout.closeDrawers();
 
-                        ((ServingListFragment) getFragmentManager()
+                        ((ServingListFragment) getSupportFragmentManager()
                                 .findFragmentById(R.id.serving_list)).onNavigationDrawerItemSelected(position);
                     }
                 });
@@ -127,10 +129,13 @@ public class ServingListActivity extends AppCompatActivity
             }
         };
 
-        drawerLayout.setDrawerListener(drawerToggle);
+        drawerLayout.addDrawerListener(drawerToggle);
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setHomeButtonEnabled(true);
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setHomeButtonEnabled(true);
+        }
 
     }
     /**
@@ -147,7 +152,7 @@ public class ServingListActivity extends AppCompatActivity
             arguments.putLong(ServingDetailFragment.ARG_ITEM_ID, id);
             ServingDetailFragment fragment = new ServingDetailFragment();
             fragment.setArguments(arguments);
-            getFragmentManager().beginTransaction()
+            getSupportFragmentManager().beginTransaction()
                     .replace(R.id.serving_detail_container, fragment)
                     .commit();
 
@@ -280,7 +285,7 @@ public class ServingListActivity extends AppCompatActivity
     }
 
     @Override
-    public void onConfigurationChanged(Configuration newConfig) {
+    public void onConfigurationChanged(@NotNull Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         drawerToggle.onConfigurationChanged(newConfig);
     }

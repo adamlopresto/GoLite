@@ -4,7 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentActivity;
 
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
@@ -19,7 +19,7 @@ import com.google.zxing.integration.android.IntentResult;
  * more than a {@link ServingDetailFragment}.
  */
 @SuppressWarnings("WeakerAccess")
-public class ServingDetailActivity extends AppCompatActivity {
+public class ServingDetailActivity extends FragmentActivity {
 
     private ServingDetailFragment fragment;
 
@@ -30,7 +30,8 @@ public class ServingDetailActivity extends AppCompatActivity {
 
         // Show the Up button in the action bar.
         //noinspection ConstantConditions
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        //FIXME
+        //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // savedInstanceState is non-null when there is fragment state
         // saved from previous configurations of this activity
@@ -58,7 +59,7 @@ public class ServingDetailActivity extends AppCompatActivity {
 
             fragment = new ServingDetailFragment();
             fragment.setArguments(getIntent().getExtras());
-            getFragmentManager().beginTransaction()
+            getSupportFragmentManager().beginTransaction()
                     .add(R.id.serving_detail_container, fragment)
                     .commit();
         }
@@ -83,10 +84,11 @@ public class ServingDetailActivity extends AppCompatActivity {
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        super.onActivityResult(requestCode, resultCode, intent);
         IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
         if (scanResult != null) {
             if (fragment == null)
-                fragment = (ServingDetailFragment)getFragmentManager().findFragmentById(R.id.serving_detail_container);
+                fragment = (ServingDetailFragment) getSupportFragmentManager().findFragmentById(R.id.serving_detail_container);
             fragment.addBarcode(scanResult.getContents());
         }
     }

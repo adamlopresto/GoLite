@@ -3,15 +3,11 @@ package fake.domain.adamlopresto.golite;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.ListFragment;
-import android.app.LoaderManager;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.Loader;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
@@ -34,6 +30,11 @@ import android.widget.PopupMenu;
 import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.fragment.app.ListFragment;
+import androidx.loader.app.LoaderManager;
+import androidx.loader.content.CursorLoader;
+import androidx.loader.content.Loader;
 
 import com.google.zxing.integration.android.IntentIntegrator;
 
@@ -100,13 +101,12 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
             food_id = args.getLong(ARG_ITEM_ID, -1L);
         if (food_id == -1L && savedInstanceState != null)
             food_id = savedInstanceState.getLong(ARG_ITEM_ID, -1L);
-
     }
 
     @Override
-    public void onAttach(@NotNull Activity activity){
-        super.onAttach(activity);
-        setListAdapter(adapter = new FoodServingAdapter(activity));
+    public void onAttach(@NotNull Context context){
+        super.onAttach(context);
+        setListAdapter(adapter = new FoodServingAdapter(context));
     }
 
     @Override
@@ -121,15 +121,15 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_serving_detail, container, false);
         assert rootView != null;
-        name = (EditText) rootView.findViewById(R.id.name);
-        notes = (EditText) rootView.findViewById(R.id.notes);
+        name = rootView.findViewById(R.id.name);
+        notes = rootView.findViewById(R.id.notes);
 
         if (food_id == -1L) {
             Bundle arguments = getArguments();
             if (arguments != null) {
                 String foodName = arguments.getString(ARG_FOOD_NAME);
                 if (!TextUtils.isEmpty(foodName)) {
-                    Cursor cursor = getActivity().getContentResolver().query(GoLiteContentProvider.FOOD_URI,
+                    Cursor cursor = requireContext().getContentResolver().query(GoLiteContentProvider.FOOD_URI,
                             new String[]{FoodsTable.COLUMN_ID, FoodsTable.COLUMN_NAME},
                             FoodsTable.COLUMN_NAME+" = ?",
                             new String[]{foodName}, null);
@@ -167,14 +167,13 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
     }
 
     private void initalizeLoaders(){
-        LoaderManager manager = getLoaderManager();
-        assert manager != null;
+        LoaderManager manager = LoaderManager.getInstance(this);
         manager.initLoader(FOOD_LOADER, null, this);
         manager.initLoader(SERVINGS_LOADER, null, this);
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(@NotNull Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putLong(ARG_ITEM_ID, food_id);
     }
@@ -192,7 +191,6 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
         }
     }
 
-    @SuppressWarnings("ConstantConditions")
     private boolean updateOrCreate() {
         if (food_id == -1L) {
             ContentValues values = new ContentValues(2);
@@ -204,7 +202,7 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
                     Toast.makeText(getActivity(), "Can't create a food without a name", Toast.LENGTH_LONG).show();
                     return false;
                 }
-                Uri newItem = getActivity().getContentResolver().insert(GoLiteContentProvider.FOOD_URI, values);
+                Uri newItem = requireContext().getContentResolver().insert(GoLiteContentProvider.FOOD_URI, values);
                 food_id = Long.parseLong(newItem.getLastPathSegment());
                 Bundle args = getArguments();
                 if (args != null){
@@ -257,25 +255,25 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, @NotNull MenuInflater inflater) {
+    public void onCreateOptionsMenu(@NotNull Menu menu, @NotNull MenuInflater inflater) {
         inflater.inflate(R.menu.serving_detail, menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()){
-            case R.id.menu_new:
-                return createNewServing();
-            case R.id.menu_scan:
-                IntentIntegrator integrator = new IntentIntegrator(getActivity());
-                integrator.addExtra(ARG_ITEM_ID, food_id);
-                integrator.initiateScan();
-                return true;
-            case R.id.menu_delete_barcodes:
-                DatabaseHelper helper = DatabaseHelper.getInstance(getActivity());
-                SQLiteDatabase database = helper.getWritableDatabase();
-                database.delete(BarcodesTable.TABLE, BarcodesTable.COLUMN_FOOD+" = ?", DatabaseHelper.idToArgs(food_id));
-                return true;
+        int id = item.getItemId();
+        if (id == R.id.menu_new) {
+            return createNewServing();
+        } else if (id == R.id.menu_scan) {
+            IntentIntegrator integrator = new IntentIntegrator(getActivity());
+            integrator.addExtra(ARG_ITEM_ID, food_id);
+            integrator.initiateScan();
+            return true;
+        } else if (id == R.id.menu_delete_barcodes) {
+            DatabaseHelper helper = DatabaseHelper.getInstance(getActivity());
+            SQLiteDatabase database = helper.getWritableDatabase();
+            database.delete(BarcodesTable.TABLE, BarcodesTable.COLUMN_FOOD + " = ?", DatabaseHelper.idToArgs(food_id));
+            return true;
         }
 
         return false;
@@ -296,7 +294,7 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
                     .commit();
                     */
 
-            getLoaderManager().restartLoader(SERVINGS_LOADER, null, this);
+            LoaderManager.getInstance(this).restartLoader(SERVINGS_LOADER, null, this);
             return true;
         } else {
             Toast.makeText(getActivity(), "Set a food name first", Toast.LENGTH_LONG).show();
@@ -313,13 +311,13 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
             Utils.error(context, "Could not instantiate dialog to create new serving");
             return;
         }
-        final EditText number = (EditText) view.findViewById(R.id.number);
-        final EditText units = (EditText) view.findViewById(R.id.units);
-        final EditText cal = (EditText) view.findViewById(R.id.calories);
+        final EditText number = view.findViewById(R.id.number);
+        final EditText units = view.findViewById(R.id.units);
+        final EditText cal = view.findViewById(R.id.calories);
         number.setText(num);
         units.setText(unitsStr);
         cal.setText(calories);
-        final Checkable visible = (Checkable) view.findViewById(R.id.show_default);
+        final Checkable visible = view.findViewById(R.id.show_default);
         builder.setView(view);
         builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             @Override
@@ -362,19 +360,20 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
             }
         });
         dlg.show();
-        */
+         */
     }
 
+    @NotNull
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         if (id == FOOD_LOADER)
-            return new CursorLoader(getActivity(),
+            return new CursorLoader(requireContext(),
                     GoLiteContentProvider.FOOD_URI,
                     new String[]{FoodsTable.COLUMN_NAME, FoodsTable.COLUMN_NOTES},
                     FoodsTable.COLUMN_ID + "=?", new String[]{String.valueOf(food_id)}, null
             );
         else //id == SERVINGS_LOADER
-            return new CursorLoader(getActivity(),
+            return new CursorLoader(requireContext(),
                     Uri.withAppendedPath(GoLiteContentProvider.SERVING_DATED_HISTORY_URI,
                             ServingListFragment.activeDate),
                     new String[]{ServingsView.COLUMN_ID, ServingsView.COLUMN_NUMBER,
@@ -398,7 +397,7 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
     }
 
     @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
+    public void onLoaderReset(@NotNull Loader<Cursor> loader) {
 
     }
 
@@ -415,19 +414,6 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
         db.insert(BarcodesTable.TABLE, null, values);
     }
 
-    /**
-     * Receive the result from a previous call to
-     * {@link #startActivityForResult(android.content.Intent, int)}.  This follows the
-     * related Activity API as described there in
-     * {@link android.app.Activity#onActivityResult(int, int, android.content.Intent)}.
-     *
-     * @param requestCode The integer request code originally supplied to
-     *                    startActivityForResult(), allowing you to identify who this
-     *                    result came from.
-     * @param resultCode  The integer result code returned by the child activity
-     *                    through its setResult().
-     * @param data        An Intent, which can return result data to the caller
-     */
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode != CALCULATOR_REQUEST_CODE)
@@ -486,7 +472,6 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
             assert resolver != null;
             double newQty = 0;
             try {
-                //noinspection ConstantConditions
                 newQty = Double.parseDouble(quantityView.getText().toString());
             } catch (NumberFormatException | NullPointerException ignored) {
                 //noop
@@ -517,7 +502,6 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
                     values.put(HistoryTable.COLUMN_QUANTITY, newQty);
                     try {
                         Uri newItem = resolver.insert(GoLiteContentProvider.HISTORY_URI, values);
-                        //noinspection ConstantConditions
                         history_id = Long.parseLong(newItem.getLastPathSegment());
                     } catch (Exception e){
                         Utils.error(ctx, new Throwable("Could not create history item", e));
@@ -540,7 +524,6 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
 
         @Override
         public void onClick(View v) {
-            //noinspection ConstantConditions
             PopupMenu popup = new PopupMenu(v.getContext(), v);
             popup.inflate(R.menu.cab_edit_delete);
             popup.setOnMenuItemClickListener(this);
@@ -549,28 +532,28 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
 
         @Override
         public boolean onMenuItemClick(MenuItem item) {
-            switch (item.getItemId()){
-                case R.id.edit:
-                    showEditDialog(quantityView.getContext(), numberView.getText(),
-                            unitsView.getText(), Utils.NUMBER_FORMAT.format(calories), food_id, serving_id);
-                    return true;
-                case R.id.delete:
-                    //TODO
-                    AlertDialog.Builder builder = new AlertDialog.Builder(quantityView.getContext());
-                    builder.setMessage("Are you sure you want to delete this serving? " +
-                            "All history associated with it will be deleted. " +
-                            "This cannot be undone.");
-                    builder.setNegativeButton(android.R.string.cancel, null);
-                    builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            quantityView.getContext().getContentResolver().delete(
-                                    GoLiteContentProvider.SERVING_URI, ServingsView.COLUMN_ID+"=?",
-                                    DatabaseHelper.idToArgs(serving_id));
-                        }
-                    });
-                    builder.show();
-                    return true;
+            int itemId = item.getItemId();
+            if (itemId == R.id.edit) {
+                showEditDialog(quantityView.getContext(), numberView.getText(),
+                        unitsView.getText(), Utils.NUMBER_FORMAT.format(calories), food_id, serving_id
+                );
+                return true;
+            } else if (itemId == R.id.delete) {//TODO
+                AlertDialog.Builder builder = new AlertDialog.Builder(quantityView.getContext());
+                builder.setMessage("Are you sure you want to delete this serving? " +
+                        "All history associated with it will be deleted. " +
+                        "This cannot be undone.");
+                builder.setNegativeButton(android.R.string.cancel, null);
+                builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        quantityView.getContext().getContentResolver().delete(
+                                GoLiteContentProvider.SERVING_URI, ServingsView.COLUMN_ID + "=?",
+                                DatabaseHelper.idToArgs(serving_id));
+                    }
+                });
+                builder.show();
+                return true;
             }
             return false;
         }
@@ -601,12 +584,12 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
             View view = super.newView(context, cursor, parent);
             assert view != null;
             final ViewHolder holder = new ViewHolder();
-            holder.quantityView = (EditText) view.findViewById(R.id.quantity);
-            holder.numberView = (TextView) view.findViewById(R.id.number);
-            holder.unitsView = (TextView) view.findViewById(R.id.units);
-            holder.caloriesView = (TextView) view.findViewById(R.id.calories);
-            holder.totalView = (TextView) view.findViewById(R.id.total);
-            holder.totalLabel = (TextView) view.findViewById(R.id.total_label);
+            holder.quantityView = view.findViewById(R.id.quantity);
+            holder.numberView = view.findViewById(R.id.number);
+            holder.unitsView = view.findViewById(R.id.units);
+            holder.caloriesView = view.findViewById(R.id.calories);
+            holder.totalView = view.findViewById(R.id.total);
+            holder.totalLabel = view.findViewById(R.id.total_label);
 
             view.findViewById(R.id.calculate).setOnClickListener(new View.OnClickListener() {
                 @Override
