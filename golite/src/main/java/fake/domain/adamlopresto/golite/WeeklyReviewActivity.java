@@ -80,11 +80,13 @@ public class WeeklyReviewActivity extends FragmentActivity {
             String today = DatabaseHelper.DATE_FORMAT.format(calendar.getTime());
             int day = calendar.get(Calendar.DAY_OF_WEEK);
             int offset;
-            if (day == Calendar.SATURDAY) {
-                offset = 1;
-            } else {
-                offset = day + 1;
-            }
+            int weekStart = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(getActivity()).getString("week_starts_on_day", "2"));
+            offset = (day - weekStart + 7) % 7;
+//            if (day == Calendar.SATURDAY) {
+//                offset = 1;
+//            } else {
+//                offset = day + 1;
+//            }
             calendar.add(Calendar.DATE, -offset);
             String lastFriday = DatabaseHelper.DATE_FORMAT.format(calendar.getTime());
 

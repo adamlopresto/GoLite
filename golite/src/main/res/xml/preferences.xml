@@ -5,9 +5,13 @@
         android:key="calories_per_day_key"
         android:title="@string/calories_per_day_title"
         android:defaultValue="1600"
-        android:numeric="integer"
-
+        android:inputType="number"
         />
-
-
+<ListPreference
+    android:key="week_starts_on_day"
+    android:title="Week starts on which day"
+    android:defaultValue="2"
+    android:entries="@array/weekday_labels"
+    android:entryValues="@array/weekday_values"
+    />
 </PreferenceScreen>
