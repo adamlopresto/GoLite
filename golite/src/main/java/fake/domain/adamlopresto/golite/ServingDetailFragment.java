@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -107,12 +108,6 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
     public void onAttach(@NotNull Context context){
         super.onAttach(context);
         setListAdapter(adapter = new FoodServingAdapter(context));
-    }
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
         setHasOptionsMenu(true);
     }
 

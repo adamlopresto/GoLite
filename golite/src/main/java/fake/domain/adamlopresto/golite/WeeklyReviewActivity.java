@@ -16,7 +16,6 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -28,7 +27,7 @@ import fake.domain.adamlopresto.golite.db.DatabaseHelper;
 import fake.domain.adamlopresto.golite.db.TotalsView;
 
 
-public class WeeklyReviewActivity extends FragmentActivity {
+public class WeeklyReviewActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
