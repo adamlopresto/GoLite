@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -143,7 +144,7 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
                                 addBarcode(barcode);
                             }
                         }
-                        initializeLoaders();
+                        initalizeLoaders();
                     }
                     else {
                         foodName = Character.toUpperCase(foodName.charAt(0)) + foodName.substring(1);
@@ -154,13 +155,13 @@ public class ServingDetailFragment extends ListFragment implements LoaderManager
                 //TODO: copy notes for new items
             }
         } else {
-            initializeLoaders();
+            initalizeLoaders();
         }
 
         return rootView;
     }
 
-    private void initializeLoaders(){
+    private void initalizeLoaders(){
         LoaderManager manager = LoaderManager.getInstance(this);
         manager.initLoader(FOOD_LOADER, null, this);
         manager.initLoader(SERVINGS_LOADER, null, this);
