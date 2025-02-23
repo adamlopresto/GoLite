@@ -9,6 +9,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -82,8 +83,7 @@ public class ServingListActivity extends AppCompatActivity
                     .setActivateOnItemClick(true);
         }
 
-        final ListView drawerList;
-        drawerList = findViewById(R.id.left_drawer);
+        final ListView drawerList = findViewById(R.id.left_drawer);
         String[] dateChoices = new String[10];
         dateChoices[0] = "All";
         dateChoices[1] = "Today";

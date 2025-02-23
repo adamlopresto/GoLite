@@ -356,7 +356,7 @@ public class ServingListFragment extends ListFragment
                     if (TextUtils.isEmpty(newText)) {
                         query = null;
                     } else {
-                        query = newText;
+                        query = newText.trim();
                     }
                     //TODO
                     restartLoaders(false);
@@ -373,27 +373,25 @@ public class ServingListFragment extends ListFragment
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()){
-            case R.id.menu_new: {
-                Intent intent = new Intent(requireContext(), ServingDetailActivity.class);
-                if (!TextUtils.isEmpty(query))
-                    intent.putExtra(ServingDetailFragment.ARG_FOOD_NAME, query);
-                startActivity(intent);
-                return true;
-            }
-            case R.id.settings:
-                startActivity(new Intent(requireContext(), SettingsActivity.class));
-                return true;
-            case R.id.weekly_review:
-                startActivity(new Intent(requireContext(), WeeklyReviewActivity.class));
-                return true;
-            case R.id.menu_scan:
-                IntentIntegrator integrator = new IntentIntegrator(requireActivity());
-                integrator.initiateScan();
-                return true;
-            default:
-                return false;
+        int itemId = item.getItemId();
+        if (itemId == R.id.menu_new) {
+            Intent intent = new Intent(requireContext(), ServingDetailActivity.class);
+            if (!TextUtils.isEmpty(query))
+                intent.putExtra(ServingDetailFragment.ARG_FOOD_NAME, query);
+            startActivity(intent);
+            return true;
+        } else if (itemId == R.id.settings) {
+            startActivity(new Intent(requireContext(), SettingsActivity.class));
+            return true;
+        } else if (itemId == R.id.weekly_review) {
+            startActivity(new Intent(requireContext(), WeeklyReviewActivity.class));
+            return true;
+        } else if (itemId == R.id.menu_scan) {
+            IntentIntegrator integrator = new IntentIntegrator(requireActivity());
+            integrator.initiateScan();
+            return true;
         }
+        return false;
     }
 
     @Override
